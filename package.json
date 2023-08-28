@@ -9,7 +9,7 @@
     "url": "https://github.com/iamalipe/simple-canvas-playground-react-ts.git"
   },
   "description": "Simple Canvas Playground",
-  "homepage": "",
+  "homepage": "https://simple-canvas-playground.web.app",
   "private": true,
   "version": "0.0.1",
   "type": "module",
