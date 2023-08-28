@@ -1,0 +1,43 @@
+#custom-toastContainer {
+  width: calc(100% - 48px);
+  height: calc(100% - 48px);
+  position: fixed;
+  z-index: 99999;
+  margin: 24px;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  pointer-events: none;
+}
+
+#custom-toastContainer.top-left {
+  align-items: flex-start;
+}
+
+#custom-toastContainer.top-center {
+  align-items: center;
+
+}
+
+#custom-toastContainer.top-right {
+  align-items: flex-end;
+}
+
+#custom-toastContainer.bottom-left {
+}
+
+#custom-toastContainer.bottom-center {
+}
+
+#custom-toastContainer.bottom-right {
+}
+
+#custom-toastContainer > .custom-toast{
+  width: fit-content;
+  padding: 10px;
+  border-radius:var(--rounded-box, 0.5rem);
+  color: #fff;
+  background-color: #333;
+  pointer-events: auto;
+  @apply max-w-[90%] sm:max-w-[75%] md:max-w-[50%];
+}
