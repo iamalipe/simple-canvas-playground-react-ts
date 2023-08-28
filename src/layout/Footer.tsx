@@ -5,7 +5,13 @@ const Footer = () => {
         <div>
           <span className="font-medium">
             This is a preview build. Go to{" "}
-            <a className="daisy-link-accent font-bold">Github</a> to learn more.
+            <a
+              href="https://github.com/iamalipe/simple-canvas-playground-react-ts"
+              className="daisy-link-accent font-bold"
+            >
+              Github
+            </a>{" "}
+            to learn more.
           </span>
         </div>
         {/* <div>
