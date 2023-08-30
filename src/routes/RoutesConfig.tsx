@@ -6,17 +6,15 @@ import Login from "../pages/common/Login";
 import Signup from "../pages/common/Signup";
 import Home from "../pages/Home/Home";
 import Verify from "../pages/common/Verify";
+import SnakeGame from "../pages/SnakeGame/SnakeGame";
 
 const RoutesConfig = () => {
   return (
     <Routes>
       {/* All Protected Routes*/}
       <Route element={<ProtectedLayout />}>
-        {/* Images Page */}
-        {/* <Route element={<ImagesPageLayout />}>
-          <Route path={RouteNames.IMAGES.url} element={<ImagesPage />} />
-        </Route> */}
         <Route path={RouteNames.HOME} element={<Home />} />
+        <Route path={RouteNames.SNAKEGAME} element={<SnakeGame />} />
       </Route>
       <Route element={<PublicLayout />}>
         {/* All Normal Routes */}

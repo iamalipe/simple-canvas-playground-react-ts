@@ -1,6 +1,10 @@
+import { signOut } from "firebase/auth";
+import { firebaseAuth } from "../../../hooks";
+
 export const LogoutProfilePopupItem = () => {
   const onLogout = async () => {
-    // await logOut();
+    await signOut(firebaseAuth);
+    window.location.reload();
   };
 
   return (

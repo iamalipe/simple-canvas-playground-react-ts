@@ -5,4 +5,6 @@ export enum RouteNames {
   SIGNUP = "/signup",
   CHAT = "/chat",
   VERIFY = "/verify",
+  // Programs
+  SNAKEGAME = "/snakegame",
 }

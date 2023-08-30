@@ -57,9 +57,42 @@
   }
 }
 
-#profile-popup:checked + .profile-popup-target .profile-popup-target-main{
+#profile-popup:checked + .profile-popup-target .profile-popup-target-main {
   height: 12rem;
 }
-#profile-popup:checked + .profile-popup-target .profile-popup-target-close{
+#profile-popup:checked + .profile-popup-target .profile-popup-target-close {
   display: block;
 }
+
+.this-is-loading {
+  position: fixed;
+  top: 0px;
+  left: 0px;
+  height: 100vh;
+  height: 100dvh;
+  width: 100%;
+  z-index: 99999999;
+  @apply flex justify-center items-center;
+  background: linear-gradient(
+    300deg,
+    hsl(var(--b1)),
+    hsl(var(--b3)),
+    hsl(var(--b2))
+  );
+  background-size: 180% 180%;
+  animation: this-is-loading-animation 18s ease infinite;
+}
+
+
+@keyframes this-is-loading-animation {
+  0% {
+    background-position: 0% 50%;
+  }
+  50% {
+    background-position: 100% 50%;
+  }
+  100% {
+    background-position: 0% 50%;
+  }
+}
+

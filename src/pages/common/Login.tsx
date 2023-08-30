@@ -1,8 +1,14 @@
 import { Link, useNavigate } from "react-router-dom";
 import { RouteNames } from "../../types";
-import { useState, useEffect } from "react";
+import { useState } from "react";
+import { firebaseAuth } from "../../hooks";
+import { signInWithEmailAndPassword } from "firebase/auth";
+import {
+  NoErrorsAuthenticationInterface,
+  handleFirebaseAuthError,
+} from "../../utils";
 
-const noErrors = {
+const noErrors: NoErrorsAuthenticationInterface = {
   email: null,
   password: null,
   other: null,
@@ -17,10 +23,6 @@ const Login = () => {
   const [loginInfo, setLoginInfo] = useState(initLoginInfo);
   const [loginError, setLoginError] = useState(noErrors);
 
-  // useEffect(() => {
-  //   if (currentUser) navigate(RouteNames.HOME);
-  // }, [currentUser]);
-
   const onChangeLoginInfo: React.ChangeEventHandler<HTMLInputElement> = (e) => {
     const fieldName = e.target.name;
     const fieldValue = e.target.value;
@@ -31,16 +33,16 @@ const Login = () => {
     e.preventDefault();
     setLoginError(noErrors);
     try {
-      // await app.logIn(
-      //   RealmWeb.Credentials.emailPassword(
-      //     loginInfo.email.toLowerCase(),
-      //     loginInfo.password
-      //   )
-      // );
+      await signInWithEmailAndPassword(
+        firebaseAuth,
+        loginInfo.email.toLowerCase(),
+        loginInfo.password
+      );
       setLoginInfo(initLoginInfo);
-      // location.reload();
-    } catch (err) {
-      console.log(err);
+      navigate(RouteNames.HOME);
+    } catch (error) {
+      handleFirebaseAuthError(error, setLoginError);
+      console.error(error);
     }
   };
 

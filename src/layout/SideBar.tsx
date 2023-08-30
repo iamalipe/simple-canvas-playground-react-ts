@@ -1,3 +1,15 @@
+import React from "react";
+import { RouteNames } from "../types";
+import { useNavigate } from "react-router-dom";
+
+const PROGRAM_LIST = [
+  {
+    title: "Snake Game",
+    sub: "Start: 30/8/2023 End: ",
+    path: RouteNames.SNAKEGAME,
+  },
+];
+
 const Sidebar = () => {
   return (
     <>
@@ -34,7 +46,9 @@ const Sidebar = () => {
           </button>
         </div>
         <div className="overflow-auto transition-all duration-1000 scroll-smooth h-0 flex-1">
-          <RenderProgramList />
+          {PROGRAM_LIST.map((e, index) => (
+            <RenderProgramList key={index} data={e} />
+          ))}
         </div>
       </div>
     </>
@@ -42,21 +56,29 @@ const Sidebar = () => {
 };
 export default Sidebar;
 
-const RenderProgramList = () => {
+interface RenderProgramListProps {
+  data: {
+    title: string;
+    sub: string;
+    path: RouteNames;
+  };
+}
+const RenderProgramList: React.FC<RenderProgramListProps> = ({ data }) => {
+  const navigate = useNavigate();
+
+  const onOpenProgram = () => {
+    navigate(data.path);
+  };
+
   return (
     <>
       <div
-        // onClick={onOpenChat}
+        onClick={onOpenProgram}
         className="cursor-pointer flex-none flex h-16 px-2 py-1 text-sm border-y border-y-base-200 hover:bg-base-300 hover:border-y-base-300"
       >
-        <div className="daisy-avatar daisy-online w-12 h-12 self-center">
-          <div className="w-full rounded-full">
-            <img src="https://dummyimage.com/500x500/4166eb/fff.jpg" />
-          </div>
-        </div>
         <div className="flex-1 flex flex-col justify-center whitespace-nowrap overflow-hidden ml-2">
-          <div className="font-medium">otherUserIdEmail</div>
-          <span className="font-light">data.lastMessage</span>
+          <div className="font-medium">{data.title}</div>
+          <span className="font-light">{data.sub}</span>
         </div>
       </div>
     </>

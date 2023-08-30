@@ -1,8 +1,15 @@
 import { Link, useNavigate } from "react-router-dom";
-import { RouteNames } from "../../types";
-import { useState, useEffect } from "react";
+import { FirestoreDatabaseNames, RouteNames, UserInterface } from "../../types";
+import { useState } from "react";
+import { firebaseAuth, firebaseFirestore } from "../../hooks";
+import { createUserWithEmailAndPassword } from "firebase/auth";
+import {
+  NoErrorsAuthenticationInterface,
+  handleFirebaseAuthError,
+} from "../../utils";
+import { doc, setDoc } from "firebase/firestore";
 
-const noErrors = {
+const noErrors: NoErrorsAuthenticationInterface = {
   email: null,
   password: null,
   other: null,
@@ -18,10 +25,6 @@ const Signup = () => {
 
   const navigate = useNavigate();
 
-  // useEffect(() => {
-  //   if (currentUser) navigate(RouteNames.HOME);
-  // }, [currentUser]);
-
   const onChangeSignupInfo: React.ChangeEventHandler<HTMLInputElement> = (
     e
   ) => {
@@ -34,14 +37,31 @@ const Signup = () => {
     e.preventDefault();
     setSignupError(noErrors);
     try {
-      // await app.emailPasswordAuth.registerUser({
-      //   email: signupInfo.email.toLowerCase(),
-      //   password: signupInfo.password,
-      // });
-      // setSignupInfo(initSignupInfo);
-      // navigate(RouteNames.LOGIN);
-    } catch (err) {
-      console.log(err);
+      const userCredential = await createUserWithEmailAndPassword(
+        firebaseAuth,
+        signupInfo.email.toLowerCase(),
+        signupInfo.password
+      );
+
+      const user = userCredential.user;
+      const userPayload: UserInterface = {
+        uid: user.uid,
+        email: user.email || "",
+        createdAt: user.metadata.creationTime || new Date(),
+        modifyAt: user.metadata.creationTime || new Date(),
+        fullName: user.displayName,
+        profileImage: user.photoURL,
+        authMode: "password",
+      };
+      await setDoc(
+        doc(firebaseFirestore, FirestoreDatabaseNames.USERS, userPayload.uid),
+        userPayload
+      );
+      setSignupInfo(initSignupInfo);
+      navigate(RouteNames.LOGIN);
+    } catch (error) {
+      handleFirebaseAuthError(error, setSignupError);
+      console.error(error);
     }
   };
 

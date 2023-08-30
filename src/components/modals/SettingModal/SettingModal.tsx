@@ -1,4 +1,24 @@
+import { useAtomValue } from "jotai";
+import { userAtom } from "../../../state";
+import { useState, useEffect } from "react";
+
 export const SettingModal = () => {
+  const userState = useAtomValue(userAtom);
+  const [newUserState, setNewUserState] = useState<{
+    profileImage: string | null;
+    fullName: string | null;
+  }>({
+    profileImage: null,
+    fullName: null,
+  });
+
+  useEffect(() => {
+    if (!userState) return;
+    setNewUserState({
+      fullName: userState.fullName,
+      profileImage: userState.profileImage,
+    });
+  }, [userState]);
 
   return (
     <>
@@ -13,8 +33,11 @@ export const SettingModal = () => {
                 <div className="">
                   <img
                     className="w-1/2 daisy-rounded"
-                    src="https://dummyimage.com/1000x1000/000/fff"
-                    alt=""
+                    src={
+                      newUserState.profileImage ||
+                      "https://dummyimage.com/1000x1000/000/fff&text=Profile"
+                    }
+                    alt="profile"
                   />
                 </div>
                 <input
@@ -28,8 +51,12 @@ export const SettingModal = () => {
               <label htmlFor="" className="flex flex-col">
                 <span className="font-medium text-lg">Full Name</span>
                 <input
+                  value={newUserState.fullName || ""}
                   type="text"
                   className="daisy-input daisy-input-bordered w-full daisy-input-sm"
+                  placeholder={
+                    newUserState.fullName || "enter set your name here"
+                  }
                 />
               </label>
               {/* <span className="text-error text-sm">Error</span> */}
@@ -38,7 +65,8 @@ export const SettingModal = () => {
               <label htmlFor="" className="flex flex-col">
                 <span className="font-medium text-lg">Email</span>
                 <input
-                  // value={}
+                  disabled
+                  value={userState?.email}
                   type="text"
                   className="daisy-input daisy-input-bordered w-full daisy-input-sm"
                 />
