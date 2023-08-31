@@ -4,17 +4,21 @@ import {
   SettingProfilePopupItem,
   ThemeProfilePopupItem,
 } from ".";
-import { userAtom } from "../../../state";
+import { profileImageUrlAtom, userAtom } from "../../../state";
 
 export const ProfilePopup = () => {
   const userState = useAtomValue(userAtom);
+  const profileImageUrlState = useAtomValue(profileImageUrlAtom);
 
   return (
     <div className="ml-auto relative flex justify-end">
       <label htmlFor="profile-popup" className="z-[9999] cursor-pointer">
         <img
           className="w-9 h-9 daisy-rounded bg-primary"
-          src={"https://dummyimage.com/1000x1000/000/fff&text=Profile"}
+          src={
+            profileImageUrlState ||
+            "https://dummyimage.com/1000x1000/000/fff&text=Profile"
+          }
         />
       </label>
       <input type="checkbox" className="hidden" id="profile-popup" />
