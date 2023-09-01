@@ -7,6 +7,7 @@ import Signup from "../pages/common/Signup";
 import Home from "../pages/Home/Home";
 import Verify from "../pages/common/Verify";
 import SnakeGame from "../pages/SnakeGame/SnakeGame";
+import Forgot from "../pages/common/Forgot";
 
 const RoutesConfig = () => {
   return (
@@ -20,6 +21,7 @@ const RoutesConfig = () => {
         {/* All Normal Routes */}
         <Route path={RouteNames.LOGIN} element={<Login />} />
         <Route path={RouteNames.VERIFY} element={<Verify />} />
+        <Route path={RouteNames.FORGOT} element={<Forgot />} />
         <Route path={RouteNames.SIGNUP} element={<Signup />} />
         <Route path={"*"} element={<Navigate to={RouteNames.HOME} />} />
       </Route>

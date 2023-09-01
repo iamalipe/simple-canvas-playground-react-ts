@@ -1,3 +1,3 @@
 export * from "./RouteNames";
-export * from "./userInterface";
+export * from "./UserInterface";
 export * from "./FirestoreDatabaseNames";

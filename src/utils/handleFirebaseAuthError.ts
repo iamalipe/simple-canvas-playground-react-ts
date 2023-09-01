@@ -12,6 +12,8 @@ export const handleFirebaseAuthError = (
 ) => {
   // Create a copy of the current error state to avoid overwriting other error messages
 
+  // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+  // @ts-ignore
   switch (error.code) {
     case "auth/email-already-in-use":
       setSignupError((prev) => ({
