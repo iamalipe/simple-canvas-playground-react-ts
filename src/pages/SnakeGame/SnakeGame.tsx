@@ -11,17 +11,44 @@ const SnakeGame = () => {
 
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const gameRef = useRef<SnakeGameLogic | null>(null);
+  const displayScoreRef = useRef<HTMLElement | null>(null);
+  const highestScoreRef = useRef<HTMLElement | null>(null);
 
   useEffect(() => {
     const canvas = canvasRef.current;
     if (!canvas) return;
     const gridSize = 20;
-    gameRef.current = new SnakeGameLogic(canvas, gridSize);
+    let isGameStarted = false;
+    let highestScore = 0;
+
+    const onScoreChange = (score: number) => {
+      if (!displayScoreRef.current) return;
+      displayScoreRef.current.innerText = score.toString();
+    };
+    const onGameOver = (lastScore: number) => {
+      isGameStarted = false;
+      if (highestScore < lastScore) {
+        if (!highestScoreRef.current) return;
+        highestScoreRef.current.innerText = lastScore.toString();
+      }
+      highestScore = lastScore;
+    };
+
+    gameRef.current = new SnakeGameLogic(canvas, gridSize, {
+      onScoreChange,
+      onGameOver,
+    });
 
     const keyDownHandler = (event: KeyboardEvent) => {
       if (!gameRef.current) return;
       gameRef.current.handleKeyDown(event);
-
+      if (
+        !isGameStarted &&
+        ["ArrowUp", "ArrowDown", "ArrowLeft", "ArrowRight"].includes(event.key)
+      ) {
+        gameRef.current.startGame();
+        isGameStarted = true;
+      }
       if (event.key === "ArrowUp") {
         setHighlightedButton((prev) => ({ ...prev, up: true }));
       } else if (event.key === "ArrowDown") {
@@ -34,9 +61,6 @@ const SnakeGame = () => {
     };
 
     const keyUpHandler = (event: KeyboardEvent) => {
-      if (!gameRef.current) return;
-      gameRef.current.handleKeyUp(event);
-
       if (event.key === "ArrowUp") {
         setHighlightedButton((prev) => ({ ...prev, up: false }));
       } else if (event.key === "ArrowDown") {
@@ -82,9 +106,19 @@ const SnakeGame = () => {
   };
 
   return (
-    <div className="flex-1 w-full overflow-auto flex flex-col">
-      <div className="bg-base-200 flex-none flex items-center justify-center h-12">
+    <div className="flex-1 w-full overflow-hidden flex flex-col">
+      <div className="bg-base-200 flex-none flex items-center justify-between h-12 px-4">
         <h1 className="text-lg">Snake Game v1.0.0</h1>
+        <span>
+          Highest score :{" "}
+          <strong ref={highestScoreRef} id="display-highest-score">
+            0
+          </strong>{" "}
+          | Score :{" "}
+          <strong ref={displayScoreRef} id="display-score">
+            0
+          </strong>
+        </span>
       </div>
       <div className="flex-1 p-4">
         <canvas

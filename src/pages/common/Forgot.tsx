@@ -108,7 +108,7 @@ const Forgot = () => {
       <div className="flex flex-col w-full max-w-md mt-[20%] sm:mt-[10%] h-fit px-4">
         <div className="text-center">
           <div className="text-3xl font-semibold mb-3 tracking-tight">
-            Welcome to Chat App
+            Welcome to Simple Canvas Playground
           </div>
           <div className="btn-group mb-6">
             <span>
