@@ -1,18 +1,55 @@
 import { useAtom, useAtomValue } from "jotai";
 import { profileImageUrlAtom, userAtom } from "../../../state";
 import { useState, useEffect, useRef } from "react";
-import { firebaseFirestore, firebaseStorage } from "../../../hooks";
+import {
+  firebaseAuth,
+  firebaseFirestore,
+  firebaseStorage,
+} from "../../../hooks";
 import { getDownloadURL, ref, uploadBytes } from "firebase/storage";
 import { doc, updateDoc } from "firebase/firestore";
 import { FirestoreDatabaseNames } from "../../../types";
+import {
+  updatePassword,
+  reauthenticateWithCredential,
+  EmailAuthProvider,
+  signOut,
+} from "firebase/auth";
+import { toast } from "../../../utils";
+
+const initPasswordState = {
+  currentPassword: "",
+  newPassword: "",
+  retypeNewPassword: "",
+};
+
+const initPasswordErrorState: {
+  currentPassword: string | null;
+  newPassword: string | null;
+  retypeNewPassword: string | null;
+  others: string | null;
+} = {
+  currentPassword: null,
+  newPassword: null,
+  retypeNewPassword: null,
+  others: null,
+};
 
 export const SettingModal = () => {
   const userState = useAtomValue(userAtom);
   const [profileImageUrlState, setProfileImageUrlState] =
     useAtom(profileImageUrlAtom);
   const profileUploadRef = useRef<HTMLInputElement | null>(null);
-
   const [fullName, setFullName] = useState<string | null>(null);
+
+  const [password, setPassword] = useState(initPasswordState);
+  const [passwordError, setPasswordError] = useState(initPasswordErrorState);
+
+  const isChangePasswordVisible =
+    password.currentPassword.length > 3 &&
+    password.newPassword.length > 3 &&
+    password.retypeNewPassword.length > 3 &&
+    password.newPassword === password.retypeNewPassword;
 
   useEffect(() => {
     if (!userState) return;
@@ -61,7 +98,53 @@ export const SettingModal = () => {
     );
     setFullName(fullName);
   };
-  const onSave = () => {};
+
+  const onChangePassword: React.MouseEventHandler<HTMLButtonElement> = async (
+    e
+  ) => {
+    e.preventDefault();
+    if (!firebaseAuth.currentUser) return;
+    setPasswordError(initPasswordErrorState);
+    try {
+      const credential = EmailAuthProvider.credential(
+        firebaseAuth.currentUser.email || "",
+        password.currentPassword
+      );
+      await reauthenticateWithCredential(firebaseAuth.currentUser, credential);
+      await updatePassword(firebaseAuth.currentUser, password.newPassword);
+      toast("password change successful");
+      await signOut(firebaseAuth);
+      window.location.reload();
+    } catch (error) {
+      // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+      // @ts-ignore
+      switch (error.code) {
+        case "auth/wrong-password":
+          setPasswordError((prev) => ({
+            ...prev,
+            currentPassword: "wrong password",
+          }));
+          break;
+        case "auth/weak-password":
+          setPasswordError((prev) => ({
+            ...prev,
+            newPassword: "weak password",
+            retypeNewPassword: "weak password",
+          }));
+          break;
+        default:
+          setPasswordError((prev) => ({
+            ...prev,
+            // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+            // @ts-ignore
+            others: error.message,
+          }));
+          break;
+      }
+      console.log(error);
+    }
+    // updatePassword
+  };
 
   return (
     <>
@@ -91,7 +174,6 @@ export const SettingModal = () => {
                   className="daisy-file-input daisy-file-input-bordered daisy-file-input-sm w-full"
                 />
               </label>
-              {/* <span className="text-error text-sm">Error</span> */}
             </div>
             <div>
               <label htmlFor="" className="flex flex-col">
@@ -101,43 +183,67 @@ export const SettingModal = () => {
                   value={fullName || ""}
                   onChange={(e) => setFullName(e.target.value)}
                   type="text"
+                  name="fullName"
                   className="daisy-input daisy-input-bordered w-full daisy-input-sm"
                   placeholder={fullName || "enter set your name here"}
                 />
               </label>
-              {/* <span className="text-error text-sm">Error</span> */}
             </div>
             <div>
               <label htmlFor="" className="flex flex-col">
                 <span className="font-medium text-lg">Email</span>
                 <input
+                  defaultValue={userState?.email || ""}
                   disabled
-                  value={userState?.email}
                   type="text"
+                  name="email"
                   className="daisy-input daisy-input-bordered w-full daisy-input-sm"
                 />
               </label>
-              {/* <span className="text-error text-sm">Error</span> */}
             </div>
             <div>
               <label htmlFor="" className="flex flex-col">
                 <span className="font-medium text-lg">Current password</span>
                 <input
-                  type="text"
+                  value={password.currentPassword}
+                  onChange={(e) =>
+                    setPassword((prev) => ({
+                      ...prev,
+                      currentPassword: e.target.value,
+                    }))
+                  }
+                  name="currentPassword"
+                  type="password"
                   className="daisy-input daisy-input-bordered w-full daisy-input-sm"
                 />
               </label>
-              {/* <span className="text-error text-sm">Error</span> */}
+              {passwordError.currentPassword && (
+                <span className="text-error text-sm">
+                  {passwordError.currentPassword}
+                </span>
+              )}
             </div>
             <div>
               <label htmlFor="" className="flex flex-col">
                 <span className="font-medium text-lg">New password</span>
                 <input
-                  type="text"
+                  value={password.newPassword}
+                  onChange={(e) =>
+                    setPassword((prev) => ({
+                      ...prev,
+                      newPassword: e.target.value,
+                    }))
+                  }
+                  name="newPassword"
+                  type="password"
                   className="daisy-input daisy-input-bordered w-full daisy-input-sm"
                 />
               </label>
-              {/* <span className="text-error text-sm">Error</span> */}
+              {passwordError.newPassword && (
+                <span className="text-error text-sm">
+                  {passwordError.newPassword}
+                </span>
+              )}
             </div>
             <div>
               <label htmlFor="" className="flex flex-col">
@@ -145,22 +251,38 @@ export const SettingModal = () => {
                   Re-type new password
                 </span>
                 <input
-                  type="text"
+                  value={password.retypeNewPassword}
+                  onChange={(e) =>
+                    setPassword((prev) => ({
+                      ...prev,
+                      retypeNewPassword: e.target.value,
+                    }))
+                  }
+                  name="retypeNewPassword"
+                  type="password"
                   className="daisy-input daisy-input-bordered w-full daisy-input-sm"
                 />
               </label>
-              {/* <span className="text-error text-sm">Error</span> */}
+              {passwordError.retypeNewPassword && (
+                <span className="text-error text-sm">
+                  {passwordError.retypeNewPassword}
+                </span>
+              )}
+              {passwordError.others && (
+                <span className="text-error text-sm">
+                  {passwordError.others}
+                </span>
+              )}
             </div>
             <div className="flex justify-end gap-4 mt-4">
-              {/* <button className="daisy-btn daisy-btn-sm daisy-btn-outline">
-                Reset
-              </button> */}
-              <button
-                onClick={onSave}
-                className="daisy-btn daisy-btn-sm daisy-btn-neutral"
-              >
-                Save
-              </button>
+              {isChangePasswordVisible && (
+                <button
+                  onClick={onChangePassword}
+                  className="daisy-btn daisy-btn-sm daisy-btn-neutral"
+                >
+                  Change Password
+                </button>
+              )}
             </div>
           </div>
         </form>
