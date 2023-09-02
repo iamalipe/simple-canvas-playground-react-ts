@@ -5,8 +5,11 @@ class SnakeGameLogic {
   snake: { x: number; y: number }[] = [];
   snakeDirection: "LEFT" | "RIGHT" | "UP" | "DOWN" = "DOWN";
   food = { x: 0, y: 0 };
-  speed = 50;
+  speed = 1;
+  gameLoopInterval = 500 - this.speed * 10;
   score = 0;
+  isGameStarted = false;
+  intervalRef: NodeJS.Timeout | undefined;
   onScoreChange: ((score: number) => void) | undefined;
   onGameOver: ((lastScore: number) => void) | undefined;
   // const boundingClientRect = canvas.getBoundingClientRect();
@@ -35,19 +38,30 @@ class SnakeGameLogic {
       { x: this.gridSize * 2, y: this.gridSize * 3 },
       { x: this.gridSize * 2, y: this.gridSize * 2 },
     ];
+    this.speed = 1;
+    this.gameLoopInterval = 500 - this.speed * 10;
     this.generateFood();
     this.drawFood();
     this.drawSnake();
+    this.renderStartText();
   }
 
   startGame() {
-    setInterval(() => {
+    this.isGameStarted = true;
+    this.intervalRef = setInterval(() => {
       // Call the game loop logic here
-      this.gameLoop();
-    }, 500 - this.speed * 10); // Adjust the speed as needed
+      if (this.isGameStarted) this.gameLoop();
+    }, this.gameLoopInterval); // Adjust the speed as needed
   }
 
   handleKeyDown(event: KeyboardEvent) {
+    if (
+      !this.isGameStarted &&
+      ["ArrowUp", "ArrowDown", "ArrowLeft", "ArrowRight"].includes(event.key)
+    ) {
+      this.startGame();
+    }
+
     // Handle user input to change snake direction
     switch (event.key) {
       case "ArrowUp":
@@ -76,6 +90,7 @@ class SnakeGameLogic {
     if (this.checkCollision()) {
       // Handle game over logic here
       this.gameOver();
+      this.renderGameOverText();
       return;
     }
 
@@ -200,7 +215,8 @@ class SnakeGameLogic {
     // this.score % 5 === 0 mean every 5 score speed + 1
     // max speed 45 mean gameLoop render every 50 ms
     if (this.score > 1 && this.score % 5 === 0 && this.speed < 45) {
-      this.speed++;
+      this.speed += 1;
+      this.gameLoopInterval = 500 - this.speed * 10;
     }
 
     // You can also increase the length of the snake here if needed
@@ -214,6 +230,8 @@ class SnakeGameLogic {
   }
 
   gameOver() {
+    if (this.intervalRef) clearInterval(this.intervalRef);
+    this.isGameStarted = false;
     if (!this.ctx) return;
     // Clear the canvas
     this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
@@ -230,6 +248,34 @@ class SnakeGameLogic {
 
     // Restart the game by initializing it again
     this.initialize();
+  }
+
+  renderStartText() {
+    if (!this.ctx) return;
+    const color1 = getComputedStyle(document.documentElement).getPropertyValue(
+      "--a"
+    );
+    this.ctx.fillStyle = `hsl(${color1})`;
+    this.ctx.font = "30px Arial";
+    const text = "Press any arrow key to start";
+    const textWidth = this.ctx.measureText(text).width;
+    const x = (this.canvas.width - textWidth) / 2;
+    const y = this.canvas.height / 2; // Adjust the y-coordinate
+    this.ctx.fillText(text, x, y);
+  }
+
+  renderGameOverText() {
+    if (!this.ctx) return;
+    const color1 = getComputedStyle(document.documentElement).getPropertyValue(
+      "--a"
+    );
+    this.ctx.fillStyle = `hsl(${color1})`;
+    this.ctx.font = "30px Arial";
+    const text = "Game Over!";
+    const textWidth = this.ctx.measureText(text).width;
+    const x = (this.canvas.width - textWidth) / 2;
+    const y = this.canvas.height / 2 - 30; // Adjust the y-coordinate
+    this.ctx.fillText(text, x, y);
   }
 }
 

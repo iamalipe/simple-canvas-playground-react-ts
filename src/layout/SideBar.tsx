@@ -1,11 +1,12 @@
 import React from "react";
 import { RouteNames } from "../types";
 import { useNavigate } from "react-router-dom";
+import { SNAKEGAME_VERSION } from "../pages/SnakeGame/SnakeGame";
 
 const PROGRAM_LIST = [
   {
-    title: "Snake Game",
-    sub: "Start: 30/8/2023 End: ",
+    title: "Snake Game " + SNAKEGAME_VERSION,
+    sub: "Start: 30/08/2023 End: 03/09/2023",
     path: RouteNames.SNAKEGAME,
   },
 ];

@@ -1,6 +1,8 @@
 import { useEffect, useRef, useState } from "react";
 import SnakeGameLogic from "./SnakeGameLogic";
 
+export const SNAKEGAME_VERSION = "v1.0.1";
+
 const SnakeGame = () => {
   const [highlightedButton, setHighlightedButton] = useState({
     left: false,
@@ -14,11 +16,11 @@ const SnakeGame = () => {
   const displayScoreRef = useRef<HTMLElement | null>(null);
   const highestScoreRef = useRef<HTMLElement | null>(null);
 
+  // snake game
   useEffect(() => {
     const canvas = canvasRef.current;
     if (!canvas) return;
     const gridSize = 20;
-    let isGameStarted = false;
     let highestScore = 0;
 
     const onScoreChange = (score: number) => {
@@ -26,7 +28,6 @@ const SnakeGame = () => {
       displayScoreRef.current.innerText = score.toString();
     };
     const onGameOver = (lastScore: number) => {
-      isGameStarted = false;
       if (highestScore < lastScore) {
         if (!highestScoreRef.current) return;
         highestScoreRef.current.innerText = lastScore.toString();
@@ -42,13 +43,6 @@ const SnakeGame = () => {
     const keyDownHandler = (event: KeyboardEvent) => {
       if (!gameRef.current) return;
       gameRef.current.handleKeyDown(event);
-      if (
-        !isGameStarted &&
-        ["ArrowUp", "ArrowDown", "ArrowLeft", "ArrowRight"].includes(event.key)
-      ) {
-        gameRef.current.startGame();
-        isGameStarted = true;
-      }
       if (event.key === "ArrowUp") {
         setHighlightedButton((prev) => ({ ...prev, up: true }));
       } else if (event.key === "ArrowDown") {
@@ -95,20 +89,10 @@ const SnakeGame = () => {
     };
   }, []);
 
-  const generateFood = () => {
-    if (!gameRef.current) return;
-    gameRef.current.generateFood();
-    gameRef.current.drawFood();
-  };
-  const startGame = () => {
-    if (!gameRef.current) return;
-    gameRef.current.startGame();
-  };
-
   return (
     <div className="flex-1 w-full overflow-hidden flex flex-col">
       <div className="bg-base-200 flex-none flex items-center justify-between h-12 px-4">
-        <h1 className="text-lg">Snake Game v1.0.0</h1>
+        <h1 className="text-lg">Snake Game {SNAKEGAME_VERSION}</h1>
         <span>
           Highest score :{" "}
           <strong ref={highestScoreRef} id="display-highest-score">
@@ -154,18 +138,6 @@ const SnakeGame = () => {
           }`}
         >
           Right
-        </button>
-        <button
-          className="daisy-btn daisy-btn-accent daisy-btn-sm"
-          onClick={generateFood}
-        >
-          Generate Food
-        </button>
-        <button
-          className="daisy-btn daisy-btn-accent daisy-btn-sm"
-          onClick={startGame}
-        >
-          Start Game
         </button>
       </div>
     </div>
