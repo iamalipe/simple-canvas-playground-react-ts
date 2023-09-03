@@ -6,6 +6,8 @@ export enum RouteNames {
   CHAT = "/chat",
   VERIFY = "/verify",
   FORGOT = "/forgot",
-  // Programs
+  // Games Programs
   SNAKEGAME = "/snakegame",
+  // Generate Programs
+  GENERATE_MAZE = "/generate_maze",
 }

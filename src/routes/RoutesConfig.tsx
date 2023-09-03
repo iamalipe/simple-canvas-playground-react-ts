@@ -8,6 +8,7 @@ import Home from "../pages/Home/Home";
 import Verify from "../pages/common/Verify";
 import SnakeGame from "../pages/SnakeGame/SnakeGame";
 import Forgot from "../pages/common/Forgot";
+import GenerateMaze from "../pages/GenerateMaze/GenerateMaze";
 
 const RoutesConfig = () => {
   return (
@@ -16,6 +17,7 @@ const RoutesConfig = () => {
       <Route element={<ProtectedLayout />}>
         <Route path={RouteNames.HOME} element={<Home />} />
         <Route path={RouteNames.SNAKEGAME} element={<SnakeGame />} />
+        <Route path={RouteNames.GENERATE_MAZE} element={<GenerateMaze />} />
       </Route>
       <Route element={<PublicLayout />}>
         {/* All Normal Routes */}

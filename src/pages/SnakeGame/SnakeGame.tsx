@@ -11,7 +11,7 @@ const SnakeGame = () => {
     down: false,
   });
 
-  const canvasRef = useRef<HTMLCanvasElement>(null);
+  const canvasRef = useRef<HTMLCanvasElement | null>(null);
   const gameRef = useRef<SnakeGameLogic | null>(null);
   const displayScoreRef = useRef<HTMLElement | null>(null);
   const highestScoreRef = useRef<HTMLElement | null>(null);
@@ -73,14 +73,21 @@ const SnakeGame = () => {
       canvas.height =
         Math.floor(boundingClientRect.height / gridSize) * gridSize;
       canvas.width = Math.floor(boundingClientRect.width / gridSize) * gridSize;
+      if (!gameRef.current) return;
+      gameRef.current.initialize();
     };
 
     // Add event listeners for key press and release
     window.addEventListener("keydown", keyDownHandler);
     window.addEventListener("keyup", keyUpHandler);
     window.addEventListener("resize", handleResize);
-    handleResize();
-    gameRef.current.initialize();
+
+    setTimeout(handleResize, 1100);
+    const ele = document.getElementById(
+      "side-bar-toggle"
+    ) as HTMLInputElement | null;
+    if (ele) ele.checked = true;
+
     // Cleanup when the component unmounts
     return () => {
       window.removeEventListener("keydown", keyDownHandler);
@@ -89,9 +96,23 @@ const SnakeGame = () => {
     };
   }, []);
 
+  const onResetCanvas = () => {
+    const canvas = canvasRef.current;
+    if (!canvas) return;
+    if (!gameRef.current) return;
+    const boundingClientRect = canvas.getBoundingClientRect();
+    canvas.height =
+      Math.floor(boundingClientRect.height / gameRef.current.gridSize) *
+      gameRef.current.gridSize;
+    canvas.width =
+      Math.floor(boundingClientRect.width / gameRef.current.gridSize) *
+      gameRef.current.gridSize;
+    gameRef.current.initialize();
+  };
+
   return (
     <div className="flex-1 w-full overflow-hidden flex flex-col">
-      <div className="bg-base-200 flex-none flex items-center justify-between h-12 px-4">
+      <div className="bg-base-200 flex-none flex items-center justify-between h-12 px-4 pl-12 sm:pl-4">
         <h1 className="text-lg">Snake Game {SNAKEGAME_VERSION}</h1>
         <span>
           Highest score :{" "}
@@ -104,7 +125,7 @@ const SnakeGame = () => {
           </strong>
         </span>
       </div>
-      <div className="flex-1 p-4">
+      <div className="flex-1 p-4 overflow-auto">
         <canvas
           ref={canvasRef}
           className="border border-accent w-full h-full"
@@ -138,6 +159,12 @@ const SnakeGame = () => {
           }`}
         >
           Right
+        </button>
+        <button
+          className="daisy-btn daisy-btn-accent daisy-btn-sm"
+          onClick={onResetCanvas}
+        >
+          Reset canvas
         </button>
       </div>
     </div>
