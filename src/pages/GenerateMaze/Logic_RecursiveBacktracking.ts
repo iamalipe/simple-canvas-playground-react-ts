@@ -23,6 +23,7 @@ class Logic_RecursiveBacktracking {
   totalRow: number;
   lineWidth: number;
   intervalRef: NodeJS.Timeout | undefined;
+  animationFrameRef: number | undefined;
   color_base_content: string;
   color_base_100: string;
   color_primary: string;
@@ -52,20 +53,38 @@ class Logic_RecursiveBacktracking {
   }
 
   start() {
+    if (this.intervalRef) clearInterval(this.intervalRef);
+    if (this.animationFrameRef) cancelAnimationFrame(this.animationFrameRef);
     this.generateCell();
     const cellIndex = this.maze.findIndex((e) => e.col === 0 && e.row === 0);
     this.currentCell = this.maze[cellIndex];
 
-    this.intervalRef = setInterval(() => {
-      this.render();
-      this.drawCurrentCell();
-      this.generateMaze();
-    }, 50);
+    // this.intervalRef = setInterval(() => {
+    //   this.render();
+    //   this.drawCurrentCell();
+    //   this.generateMaze();
+    // }, 50);
+
     // this.inRecursiveStyle();
+
+    this.inAnimationFrame();
+  }
+
+  inAnimationFrame() {
+    this.render();
+    this.drawCurrentCell();
+    if (this.generateMaze()) {
+      this.animationFrameRef = window.requestAnimationFrame(() =>
+        this.inAnimationFrame()
+      );
+    } else {
+      this.stop();
+    }
   }
 
   stop() {
-    clearInterval(this.intervalRef);
+    if (this.intervalRef) clearInterval(this.intervalRef);
+    if (this.animationFrameRef) cancelAnimationFrame(this.animationFrameRef);
     // this.maze = [];
     this.currentCell = undefined;
     this.mazeStack = [];
@@ -97,6 +116,7 @@ class Logic_RecursiveBacktracking {
     this.totalRow = this.canvas.height / this.gridSize;
     this.maze = [];
     this.mazeStack = [];
+    this.currentCell = undefined;
     for (let col = 0; col < this.totalCol; col++) {
       for (let row = 0; row < this.totalRow; row++) {
         const mazeObj: Maze2Interface = {

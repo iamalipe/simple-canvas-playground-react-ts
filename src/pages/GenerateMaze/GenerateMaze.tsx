@@ -2,7 +2,7 @@ import { useEffect, useRef, useState } from "react";
 import GenerateMazeLogic from "./GenerateMazeLogic";
 import Logic_RecursiveBacktracking from "./Logic_RecursiveBacktracking";
 
-export const GENERATE_MAZE_VERSION = "v1.0.0";
+export const GENERATE_MAZE_VERSION = "v1.0.1";
 
 const LOGIC_LIST = [
   "Maze Generator 1",
