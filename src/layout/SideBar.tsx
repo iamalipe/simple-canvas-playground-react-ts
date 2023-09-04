@@ -17,6 +17,13 @@ const PROGRAM_LIST = [
   },
 ];
 
+import.meta.env.DEV &&
+  PROGRAM_LIST.push({
+    title: "Test Me",
+    sub: "This only work on DEV",
+    path: RouteNames.TEST,
+  });
+
 const Sidebar = () => {
   const [filterList, setFilterList] = useState(PROGRAM_LIST);
 

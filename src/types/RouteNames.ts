@@ -10,4 +10,5 @@ export enum RouteNames {
   SNAKEGAME = "/snakegame",
   // Generate Programs
   GENERATE_MAZE = "/generate_maze",
+  TEST = "/test",
 }
