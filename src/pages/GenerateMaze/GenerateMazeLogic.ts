@@ -18,15 +18,23 @@ class GenerateMazeLogic {
     this.gridSize = gridSize;
   }
 
+  start() {
+    this.generate();
+    // this.render();
+  }
+  stop() {
+    // clearInterval(this.intervalRef);
+  }
+
   generate() {
     if (!this.ctx) return;
     const { height, width } = this.canvas;
     this.maze = [];
     for (let i = 0; i <= width - this.gridSize; i += this.gridSize) {
       for (let j = 0; j <= height - this.gridSize; j += this.gridSize) {
-        const randomBool = Math.random() < 0.1; //5% probability of getting true
+        const randomBool = Math.random() < 0.05; //5% probability of getting true
         // Checking Walls
-        const mazeObj = {
+        const mazeObj: MazeInterface = {
           x: i,
           y: j,
           isWall: true,
@@ -111,50 +119,7 @@ class GenerateMazeLogic {
   }
 
   connectPoints(point1: MazeInterface, point2: MazeInterface) {
-    console.table([point1, point2]);
-    const x1 = point1.x / this.gridSize;
-    const y1 = point1.y / this.gridSize;
-    const x2 = point2.x / this.gridSize;
-    const y2 = point2.y / this.gridSize;
-
-    const dx = Math.abs(x2 - x1);
-    const dy = Math.abs(y2 - y1);
-    const sx = x1 < x2 ? 1 : -1;
-    const sy = y1 < y2 ? 1 : -1;
-
-    let err = dx - dy;
-    let x = x1;
-    let y = y1;
-
-    while (x !== x2 || y !== y2) {
-      const currentCell = this.maze.find(
-        (cell) => cell.x === x * this.gridSize && cell.y === y * this.gridSize
-      );
-
-      // Skip the last wall
-      if (currentCell?.isLastWall) {
-        x += sx;
-        y += sy;
-        continue;
-      }
-
-      if (currentCell) {
-        currentCell.isWall = false;
-        console.log(
-          `Connected cell at (${x * this.gridSize}, ${y * this.gridSize})`
-        );
-      }
-
-      const e2 = 2 * err;
-      if (e2 > -dy) {
-        err -= dy;
-        x += sx;
-      }
-      if (e2 < dx) {
-        err += dx;
-        y += sy;
-      }
-    }
+    console.log([point1, point2]);
   }
 }
 

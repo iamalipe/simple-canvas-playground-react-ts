@@ -83,10 +83,12 @@ const SnakeGame = () => {
     window.addEventListener("resize", handleResize);
 
     setTimeout(handleResize, 1100);
-    const ele = document.getElementById(
-      "side-bar-toggle"
-    ) as HTMLInputElement | null;
-    if (ele) ele.checked = true;
+    if (window.innerWidth < 640) {
+      const ele = document.getElementById(
+        "side-bar-toggle"
+      ) as HTMLInputElement | null;
+      if (ele) ele.checked = true;
+    }
 
     // Cleanup when the component unmounts
     return () => {
