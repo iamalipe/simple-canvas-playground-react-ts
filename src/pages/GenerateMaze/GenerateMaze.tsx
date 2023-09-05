@@ -1,21 +1,20 @@
 import { useEffect, useRef, useState } from "react";
-import GenerateMazeLogic from "./GenerateMazeLogic";
-import Logic_RecursiveBacktracking from "./Logic_RecursiveBacktracking";
+import sha256 from "crypto-js/sha256";
+import RecursiveBacktracking from "./RecursiveBacktracking";
+import { toast } from "../../utils";
+import { MazeSaveObjectInterface } from "./MazeInterface";
 
-export const GENERATE_MAZE_VERSION = "v1.0.1";
+export const GENERATE_MAZE_VERSION = "v1.0.2";
 
 const LOGIC_LIST = [
-  "Maze Generator 1",
   "Depth-First Search Maze Generator Algorithm with Recursive Backtracking",
 ];
 
 const GenerateMaze = () => {
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
-  const logicRef = useRef<
-    GenerateMazeLogic | Logic_RecursiveBacktracking | null
-  >(null);
+  const logicRef = useRef<RecursiveBacktracking | null>(null);
 
-  const [selectedLogic, setSelectedLogic] = useState(LOGIC_LIST[1]);
+  const [selectedLogic, setSelectedLogic] = useState(LOGIC_LIST[0]);
   const [isLoading, setIsLoading] = useState(false);
 
   const handleResize = (gridSize?: number) => {
@@ -42,38 +41,15 @@ const GenerateMaze = () => {
     }
   };
 
-  // "Maze Generator 1"
-  useEffect(() => {
-    // its only works for LOGIC_LIST[0]
-    if (selectedLogic !== LOGIC_LIST[0]) return;
-    setIsLoading(true);
-    const canvas = canvasRef.current;
-    if (!canvas) return;
-    const gridSize = 10;
-    logicRef.current = new GenerateMazeLogic(canvas, gridSize);
-
-    // Add event listeners for key press and release
-    window.addEventListener("resize", () => handleResize(gridSize));
-
-    setTimeout(() => handleResize(gridSize), 1100);
-    fixedSideBarToggle();
-
-    // Cleanup when the component unmounts
-    return () => {
-      window.removeEventListener("resize", () => handleResize(gridSize));
-    };
-  }, [selectedLogic]);
-
   // Depth-First Search Maze Generator Algorithm with Recursive Backtracking
   useEffect(() => {
-    // its only works for LOGIC_LIST[1]
-    if (selectedLogic !== LOGIC_LIST[1]) return;
+    if (selectedLogic !== LOGIC_LIST[0]) return;
     setIsLoading(true);
     const canvas = canvasRef.current;
     if (!canvas) return;
 
     const gridSize = 15;
-    logicRef.current = new Logic_RecursiveBacktracking(canvas, gridSize);
+    logicRef.current = new RecursiveBacktracking(canvas, gridSize);
 
     // Add event listeners for key press and release
     window.addEventListener("resize", () => handleResize(gridSize));
@@ -97,6 +73,61 @@ const GenerateMaze = () => {
     logicRef.current.stop();
   };
 
+  const onSaveMaze = () => {
+    // This only save maze in localstorage
+    if (!logicRef.current) return;
+    if (logicRef.current.maze.length === 0) {
+      toast("no generated maze found");
+      return;
+    }
+    const visitedList = logicRef.current.maze.filter((e) => e.isVisited);
+    if (visitedList.length !== logicRef.current.maze.length) {
+      toast("maze wasn't complete, can't save, try after complete.");
+      return;
+    }
+
+    const mazeListJson = localStorage.getItem("mazeList");
+    if (mazeListJson) {
+      const mazeList = JSON.parse(mazeListJson) as MazeSaveObjectInterface[];
+      const mazeStringify = JSON.stringify(logicRef.current.maze);
+      const hash = sha256(mazeStringify).toString();
+
+      const hashFilter = mazeList.filter((e) => e.hash === hash);
+      if (hashFilter.length > 0) {
+        toast("already save this maze");
+        return;
+      }
+
+      const mazeObj: MazeSaveObjectInterface = {
+        date: new Date(),
+        hash: hash,
+        maze: logicRef.current.maze,
+        canvasHeight: logicRef.current.canvas.height,
+        canvasWidth: logicRef.current.canvas.width,
+        gridSize: logicRef.current.gridSize,
+        lineWidth: logicRef.current.lineWidth,
+      };
+      mazeList.push(mazeObj);
+      localStorage.setItem("mazeList", JSON.stringify(mazeList));
+    } else {
+      const mazeList = [];
+      const mazeStringify = JSON.stringify(logicRef.current.maze);
+      const hash = sha256(mazeStringify).toString();
+
+      const mazeObj: MazeSaveObjectInterface = {
+        date: new Date(),
+        hash: hash,
+        maze: logicRef.current.maze,
+        canvasHeight: logicRef.current.canvas.height,
+        canvasWidth: logicRef.current.canvas.width,
+        gridSize: logicRef.current.gridSize,
+        lineWidth: logicRef.current.lineWidth,
+      };
+      mazeList.push(mazeObj);
+      localStorage.setItem("mazeList", JSON.stringify(mazeList));
+    }
+  };
+
   return (
     <div className="flex-1 w-full overflow-hidden flex flex-col">
       <div className="bg-base-200 flex-none flex items-center justify-between h-12 px-4 pl-12 sm:pl-4">
@@ -110,7 +141,7 @@ const GenerateMaze = () => {
       </div>
       <div className="flex-none flex flex-wrap gap-4 px-4 pb-4">
         <select
-          className="daisy-select daisy-select-sm daisy-select-bordered"
+          className="daisy-select daisy-select-sm daisy-select-bordered max-w-xs"
           value={selectedLogic}
           onChange={(e) => setSelectedLogic(e.target.value)}
           disabled={isLoading}
@@ -135,6 +166,13 @@ const GenerateMaze = () => {
           className="daisy-btn daisy-btn-accent daisy-btn-sm"
         >
           Stop
+        </button>
+        <button
+          disabled={isLoading}
+          onClick={onSaveMaze}
+          className="daisy-btn daisy-btn-accent daisy-btn-sm"
+        >
+          Save
         </button>
       </div>
     </div>

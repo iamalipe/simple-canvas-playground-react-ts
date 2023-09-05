@@ -1,24 +1,15 @@
 // Depth-First Search Maze Generator Algorithm with Recursive Backtracking
 // https://en.wikipedia.org/wiki/Maze_generation_algorithm#Randomized_depth-first_search
 
-interface Maze2Interface {
-  col: number;
-  row: number;
-  rightWall: boolean;
-  leftWall: boolean;
-  topWall: boolean;
-  bottomWall: boolean;
-  isVisited: boolean;
-  edge?: "top" | "bottom" | "left" | "right";
-}
+import { MazeInterface } from "./MazeInterface";
 
-class Logic_RecursiveBacktracking {
+class RecursiveBacktracking {
   gridSize: number;
   canvas: HTMLCanvasElement;
   ctx: CanvasRenderingContext2D | null;
-  maze: Maze2Interface[] = [];
-  currentCell?: Maze2Interface;
-  mazeStack: Maze2Interface[] = [];
+  maze: MazeInterface[] = [];
+  currentCell?: MazeInterface;
+  mazeStack: MazeInterface[] = [];
   totalCol: number;
   totalRow: number;
   lineWidth: number;
@@ -55,6 +46,19 @@ class Logic_RecursiveBacktracking {
   start() {
     if (this.intervalRef) clearInterval(this.intervalRef);
     if (this.animationFrameRef) cancelAnimationFrame(this.animationFrameRef);
+    const docElement = document.documentElement;
+    this.color_accent = `hsl(${getComputedStyle(docElement).getPropertyValue(
+      "--a"
+    )})`;
+    this.color_primary = `hsl(${getComputedStyle(docElement).getPropertyValue(
+      "--p"
+    )})`;
+    this.color_base_100 = `hsl(${getComputedStyle(docElement).getPropertyValue(
+      "--b1"
+    )})`;
+    this.color_base_content = `hsl(${getComputedStyle(
+      docElement
+    ).getPropertyValue("--bc")})`;
     this.generateCell();
     const cellIndex = this.maze.findIndex((e) => e.col === 0 && e.row === 0);
     this.currentCell = this.maze[cellIndex];
@@ -119,7 +123,7 @@ class Logic_RecursiveBacktracking {
     this.currentCell = undefined;
     for (let col = 0; col < this.totalCol; col++) {
       for (let row = 0; row < this.totalRow; row++) {
-        const mazeObj: Maze2Interface = {
+        const mazeObj: MazeInterface = {
           col,
           row,
           rightWall: true,
@@ -158,8 +162,8 @@ class Logic_RecursiveBacktracking {
     }
   }
 
-  checkNeighbour(current: Maze2Interface) {
-    const neighboursArray: Maze2Interface[] = [];
+  checkNeighbour(current: MazeInterface) {
+    const neighboursArray: MazeInterface[] = [];
     const top = this.maze.find(
       (e) => e.col === current.col && e.row === current.row - 1
     );
@@ -192,7 +196,7 @@ class Logic_RecursiveBacktracking {
     }
   }
 
-  removeWalls(current: Maze2Interface, next: Maze2Interface) {
+  removeWalls(current: MazeInterface, next: MazeInterface) {
     const diffCol = current.col - next.col;
     const diffRow = current.row - next.row;
     if (diffRow === 1) {
@@ -219,7 +223,7 @@ class Logic_RecursiveBacktracking {
     });
   }
 
-  drawMazeCell(mazeCall: Maze2Interface) {
+  drawMazeCell(mazeCall: MazeInterface) {
     if (!this.ctx) return;
 
     const x1 = this.gridSize * mazeCall.col;
@@ -274,4 +278,4 @@ class Logic_RecursiveBacktracking {
   }
 }
 
-export default Logic_RecursiveBacktracking;
+export default RecursiveBacktracking;

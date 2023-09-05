@@ -3,6 +3,7 @@ import { RouteNames } from "../types";
 import { useNavigate } from "react-router-dom";
 import { SNAKEGAME_VERSION } from "../pages/SnakeGame/SnakeGame";
 import { GENERATE_MAZE_VERSION } from "../pages/GenerateMaze/GenerateMaze";
+import { PATHFINDING_VERSION } from "../pages/Pathfinding/Pathfinding";
 
 const PROGRAM_LIST = [
   {
@@ -12,8 +13,13 @@ const PROGRAM_LIST = [
   },
   {
     title: "Generate Maze " + GENERATE_MAZE_VERSION,
-    sub: "Start: 03/09/2023 End: ",
+    sub: "Start: 03/09/2023 End: 04/09/2023",
     path: RouteNames.GENERATE_MAZE,
+  },
+  {
+    title: "Path Finding " + PATHFINDING_VERSION,
+    sub: "Start: 05/09/2023 End: ",
+    path: RouteNames.PATHFINDING,
   },
 ];
 
