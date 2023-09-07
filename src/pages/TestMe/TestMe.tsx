@@ -52,7 +52,7 @@ const TestMe = () => {
 
   const onClickGenerate = () => {
     if (!logicRef.current) return;
-    logicRef.current.start();
+    // logicRef.current.start();
   };
 
   return (

@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from "react";
-import AStarAlgorithm from "./AStarAlgorithm";
 import { MazeSaveObjectInterface } from "../GenerateMaze/MazeInterface";
+import AStarAlgorithm from "./AStarAlgorithm";
 
 export const PATHFINDING_VERSION = "v0.0.1";
 
@@ -55,9 +55,14 @@ const PathFinding = () => {
     if (!canvas) return;
 
     logicRef.current = new AStarAlgorithm(canvas);
+    const mousemove = (e: MouseEvent) => {
+      if (!logicRef.current) return;
+      logicRef.current.mousemove(e);
+    };
 
     // Add event listeners for key press and release
     window.addEventListener("resize", () => handleResize());
+    canvas.addEventListener("mousemove", mousemove);
 
     setTimeout(() => handleResize(), 1100);
     fixedSideBarToggle();
@@ -66,11 +71,13 @@ const PathFinding = () => {
     // Cleanup when the component unmounts
     return () => {
       window.removeEventListener("resize", () => handleResize());
+      canvas.removeEventListener("mousemove", mousemove);
     };
   }, []);
 
-  const onClickGenerate = () => {
+  const onClickStart = () => {
     if (!logicRef.current) return;
+    logicRef.current.start();
   };
   const onMazeLoad = () => {
     if (!logicRef.current) return;
@@ -114,10 +121,10 @@ const PathFinding = () => {
         </button>
         <button
           disabled={isLoading}
-          onClick={onClickGenerate}
+          onClick={onClickStart}
           className="daisy-btn daisy-btn-accent daisy-btn-sm"
         >
-          Generate
+          Start
         </button>
       </div>
     </div>

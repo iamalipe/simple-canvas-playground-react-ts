@@ -1,22 +1,36 @@
+// https://en.wikipedia.org/wiki/Pathfinding
+// https://www.graphable.ai/blog/pathfinding-algorithms
+
+// https://brilliant.org/wiki/a-star-search/
+// f(n)=g(n)+h(n)
+// where g = cost and h = heuristics
+
 import {
   MazeInterface,
   MazeSaveObjectInterface,
 } from "../GenerateMaze/MazeInterface";
 
 interface AStarMazeInterface extends MazeInterface {
-  hello?: string;
+  highlight: boolean;
 }
 
 class AStarAlgorithm {
   canvas: HTMLCanvasElement;
   ctx: CanvasRenderingContext2D | null;
-  maze?: AStarMazeInterface[];
+  maze: AStarMazeInterface[] = [];
+  openSet: AStarMazeInterface[] = [];
+  closeSet: AStarMazeInterface[] = [];
   color_base_content: string;
   color_base_100: string;
   color_primary: string;
   color_accent: string;
-  gridSize: number;
-  lineWidth: number;
+  gridSize: number = 0;
+  lineWidth: number = 0;
+  totalCol: number = 0;
+  totalRow: number = 0;
+  animationFrameRef: number | undefined;
+  startPoint: AStarMazeInterface | undefined;
+  endPoint: AStarMazeInterface | undefined;
 
   constructor(canvas: HTMLCanvasElement) {
     this.canvas = canvas;
@@ -34,8 +48,6 @@ class AStarAlgorithm {
     this.color_base_content = `hsl(${getComputedStyle(
       docElement
     ).getPropertyValue("--bc")})`;
-    this.gridSize = 0;
-    this.lineWidth = 0;
   }
 
   setColors() {
@@ -55,23 +67,49 @@ class AStarAlgorithm {
   }
 
   load(mazeSaveObject: MazeSaveObjectInterface) {
-    this.maze = mazeSaveObject.maze;
+    const newMaze = mazeSaveObject.maze.map((e) => {
+      const returnObj: AStarMazeInterface = {
+        ...e,
+        highlight: false,
+      };
+      return returnObj;
+    });
+
+    this.maze = newMaze;
     this.gridSize = mazeSaveObject.gridSize;
     this.lineWidth = mazeSaveObject.lineWidth;
     this.canvas.width = mazeSaveObject.canvasWidth;
     this.canvas.height = mazeSaveObject.canvasHeight;
+    this.totalCol = mazeSaveObject.canvasWidth / mazeSaveObject.gridSize;
+    this.totalRow = mazeSaveObject.canvasWidth / mazeSaveObject.gridSize;
     this.setColors();
+    this.renderLoop();
+  }
+
+  start() {
+    this.startPoint = this.maze.find((e) => e.col === 0 && e.row === 0);
+    this.endPoint = this.maze.find((e) => e.col === 40 && e.row === 40);
+    if (this.maze.length <= 0) return;
+    if (!this.startPoint) return;
+    console.log("Start");
+
+    this.openSet.push(this.startPoint);
+  }
+
+  renderLoop() {
     this.render();
+    this.animationFrameRef = window.requestAnimationFrame(() =>
+      this.renderLoop()
+    );
   }
 
   render() {
-    if (!this.maze) return;
     this.maze.forEach((e) => {
       this.drawMazeCell(e);
     });
   }
 
-  drawMazeCell(mazeCall: MazeInterface) {
+  drawMazeCell(mazeCall: AStarMazeInterface) {
     if (!this.ctx) return;
 
     const x1 = this.gridSize * mazeCall.col;
@@ -82,6 +120,9 @@ class AStarAlgorithm {
     let fillStyle = this.color_base_100;
     if (mazeCall.isVisited) {
       fillStyle = this.color_primary;
+    }
+    if (mazeCall.highlight) {
+      fillStyle = "red";
     }
     this.ctx.fillStyle = fillStyle;
     this.ctx.fillRect(x1, y1, this.gridSize, this.gridSize);
@@ -106,6 +147,31 @@ class AStarAlgorithm {
     }
     this.ctx.strokeStyle = this.color_base_content;
     this.ctx.stroke();
+  }
+
+  mousemove(e: MouseEvent) {
+    console.log(e);
+
+    // this.maze.forEach((maze) => {
+    //   const x1 = maze.col * this.gridSize;
+    //   const y1 = maze.row * this.gridSize;
+    //   if (
+    //     x1 < e.offsetX &&
+    //     x1 + this.gridSize > e.offsetX &&
+    //     y1 < e.offsetY &&
+    //     y1 + this.gridSize > e.offsetY
+    //   ) {
+    //     maze.highlight = true;
+    //   } else {
+    //     maze.highlight = false;
+    //   }
+    // });
+  }
+
+  getRandomInt(min: number, max: number) {
+    min = Math.ceil(min);
+    max = Math.floor(max);
+    return Math.floor(Math.random() * (max - min + 1)) + min;
   }
 }
 
