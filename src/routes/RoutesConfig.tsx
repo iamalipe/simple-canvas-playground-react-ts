@@ -10,7 +10,7 @@ import SnakeGame from "../pages/SnakeGame/SnakeGame";
 import Forgot from "../pages/common/Forgot";
 import GenerateMaze from "../pages/GenerateMaze/GenerateMaze";
 import TestMe from "../pages/TestMe/TestMe";
-import PathFinding from "../pages/PathFinding/PathFinding";
+import PathFinding from "../pages/PathFindingX/PathFinding";
 
 const RoutesConfig = () => {
   return (

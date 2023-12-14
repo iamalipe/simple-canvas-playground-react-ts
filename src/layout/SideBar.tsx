@@ -3,7 +3,7 @@ import { RouteNames } from "../types";
 import { useNavigate } from "react-router-dom";
 import { SNAKEGAME_VERSION } from "../pages/SnakeGame/SnakeGame";
 import { GENERATE_MAZE_VERSION } from "../pages/GenerateMaze/GenerateMaze";
-import { PATHFINDING_VERSION } from "../pages/PathFinding/PathFinding";
+import { PATHFINDING_VERSION } from "../pages/PathFindingX/PathFinding";
 
 const PROGRAM_LIST = [
   {
