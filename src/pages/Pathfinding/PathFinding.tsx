@@ -2,7 +2,7 @@ import { useEffect, useRef, useState } from "react";
 import { MazeSaveObjectInterface } from "../GenerateMaze/MazeInterface";
 import AStarAlgorithm from "./AStarAlgorithm";
 
-export const PATHFINDING_VERSION = "v0.0.1";
+export const PATHFINDING_VERSION = "v0.0.3";
 
 // https://en.wikipedia.org/wiki/Pathfinding
 // https://www.graphable.ai/blog/pathfinding-algorithms

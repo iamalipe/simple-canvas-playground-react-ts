@@ -175,7 +175,7 @@ class AStarAlgorithm {
           neighbor.h = this.calculateHeuristic(neighbor, this.endPoint);
           neighbor.f = neighbor.g + neighbor.h;
           neighbor.startOrEnd = "START"; // Highlight the path as it's being explored
-          neighbor.parent = currentNode;
+          // neighbor.parent = currentNode;
 
           if (!openSet.includes(neighbor)) {
             openSet.push(neighbor);
