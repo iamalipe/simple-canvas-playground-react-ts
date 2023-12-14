@@ -130,4 +130,5 @@ const PathFinding = () => {
     </div>
   );
 };
+
 export default PathFinding;

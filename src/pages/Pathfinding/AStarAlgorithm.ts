@@ -20,6 +20,7 @@ export interface MazeInterface {
   isVisited: boolean;
   edge?: "top" | "bottom" | "left" | "right";
 }
+
 export interface MazeSaveObjectInterface {
   date: Date;
   hash: string;
@@ -192,6 +193,7 @@ class AStarAlgorithm {
     // Return an array of valid neighboring nodes.
     // Example:
     const neighbors: AStarMazeInterface[] = [];
+    console.log("getNeighbors", node);
 
     // Check if the neighbor exists and is not a wall
     // Add valid neighbors to the 'neighbors' array
@@ -257,6 +259,8 @@ class AStarAlgorithm {
   }
 
   mousemove(e: MouseEvent) {
+    console.log("mousemove", e);
+
     // this.maze.forEach((maze) => {
     //   const x1 = maze.col * this.gridSize;
     //   const y1 = maze.row * this.gridSize;
