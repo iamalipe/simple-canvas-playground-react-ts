@@ -1,6 +1,6 @@
 # [simple-canvas-playground-react-ts](https://simple-canvas-playground.web.app/)
 
-# Hosted on [Vercel](https://vercel.com/)
+# Hosted on [Firebase](https://firebase.google.com/)
 
 ### React - Typescript - Vite
 
