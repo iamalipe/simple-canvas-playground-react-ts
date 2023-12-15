@@ -12,4 +12,5 @@ export enum RouteNames {
   GENERATE_MAZE = "/generate_maze",
   TEST = "/test",
   PATHFINDING = "/pathfinding",
+  VIRTUALWORLD = "/virtualworld",
 }

@@ -11,6 +11,7 @@ import Forgot from "../pages/common/Forgot";
 import GenerateMaze from "../pages/GenerateMaze/GenerateMaze";
 import TestMe from "../pages/TestMe/TestMe";
 import PathFinding from "../pages/PathFindingX/PathFinding";
+import VirtualWorld from "../pages/VirtualWorld/VirtualWorld";
 
 const RoutesConfig = () => {
   return (
@@ -21,6 +22,7 @@ const RoutesConfig = () => {
         <Route path={RouteNames.SNAKEGAME} element={<SnakeGame />} />
         <Route path={RouteNames.GENERATE_MAZE} element={<GenerateMaze />} />
         <Route path={RouteNames.PATHFINDING} element={<PathFinding />} />
+        <Route path={RouteNames.VIRTUALWORLD} element={<VirtualWorld />} />
         {import.meta.env.DEV && (
           <Route path={RouteNames.TEST} element={<TestMe />} />
         )}

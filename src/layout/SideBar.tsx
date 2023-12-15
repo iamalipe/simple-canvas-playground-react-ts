@@ -4,6 +4,7 @@ import { useNavigate } from "react-router-dom";
 import { SNAKEGAME_VERSION } from "../pages/SnakeGame/SnakeGame";
 import { GENERATE_MAZE_VERSION } from "../pages/GenerateMaze/GenerateMaze";
 import { PATHFINDING_VERSION } from "../pages/PathFindingX/PathFinding";
+import { VIRTUALWORLD_VERSION } from "../pages/VirtualWorld/VirtualWorld";
 
 const PROGRAM_LIST = [
   {
@@ -20,6 +21,11 @@ const PROGRAM_LIST = [
     title: "Path Finding " + PATHFINDING_VERSION,
     sub: "Start: 05/09/2023 End: ",
     path: RouteNames.PATHFINDING,
+  },
+  {
+    title: "Virtual World " + VIRTUALWORLD_VERSION,
+    sub: "Start: 14/12/2023 End: ",
+    path: RouteNames.VIRTUALWORLD,
   },
 ];
 
