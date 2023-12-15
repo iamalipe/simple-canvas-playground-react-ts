@@ -13,15 +13,6 @@ const VirtualWorld = () => {
 
     logicRef.current = new VirtualWorldLogic(canvas);
 
-    // const keyDownHandler = (event: KeyboardEvent) => {
-    //   if (!logicRef.current) return;
-    //   if (event.code === "Space") {
-    //     console.log("Space Space");
-
-    //     // logicRef.current.generate();
-    //   }
-    // };
-
     const handleResize = () => {
       const canvas = canvasRef.current;
       if (!canvas) return;
@@ -33,11 +24,7 @@ const VirtualWorld = () => {
       logicRef.current.initialize();
     };
 
-    // Add event listeners for key press and release
-    // window.addEventListener("keydown", keyDownHandler);
-    window.addEventListener("resize", handleResize);
-
-    setTimeout(handleResize, 1100);
+    setTimeout(handleResize, 1500);
     const ele = document.getElementById(
       "side-bar-toggle"
     ) as HTMLInputElement | null;
@@ -49,11 +36,6 @@ const VirtualWorld = () => {
       window.removeEventListener("resize", handleResize);
     };
   }, []);
-
-  const onClickStart = () => {
-    if (!logicRef.current) return;
-    logicRef.current.start();
-  };
 
   const onAddRandomPoint = () => {
     if (!logicRef.current) return;
@@ -77,12 +59,6 @@ const VirtualWorld = () => {
         ></canvas>
       </div>
       <div className="flex-none flex flex-wrap gap-4 px-4 pb-4">
-        <button
-          onClick={onClickStart}
-          className="daisy-btn daisy-btn-accent daisy-btn-sm"
-        >
-          Start
-        </button>
         <button
           onClick={onAddRandomPoint}
           className="daisy-btn daisy-btn-accent daisy-btn-sm"

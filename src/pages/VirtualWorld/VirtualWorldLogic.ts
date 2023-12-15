@@ -1,3 +1,4 @@
+import GraphEditor from "./graphEditor";
 import { Graph } from "./math/graph";
 import { randomInt } from "./math/utils";
 import { Point, Segment } from "./primitives";
@@ -7,6 +8,7 @@ class VirtualWorldLogic {
   ctx: CanvasRenderingContext2D;
   graph: Graph;
   pointSize = 20;
+  graphEditor: GraphEditor;
 
   constructor(canvas: HTMLCanvasElement) {
     this.canvas = canvas;
@@ -26,13 +28,17 @@ class VirtualWorldLogic {
     const s5 = new Segment(p4, p3);
 
     this.graph = new Graph([p1, p2, p3, p4], [s1, s2, s3, s4, s5]);
+    this.graphEditor = new GraphEditor(this.canvas, this.graph);
+  }
+
+  animate() {
+    this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
+    this.graphEditor.display();
+    window.requestAnimationFrame(() => this.animate());
   }
 
   initialize() {
-    this.graph.draw(this.ctx);
-  }
-  start() {
-    console.log("hello VirtualWorldLogic");
+    this.animate();
   }
 
   addRandomPoint() {
