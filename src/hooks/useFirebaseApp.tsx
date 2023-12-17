@@ -24,38 +24,36 @@ export const firebaseFirestore = getFirestore(firebaseApp);
 export const firebaseStorage = getStorage(firebaseApp);
 
 export const useFirebaseApp = () => {
-  const [userAuthState, setUserAuthState] = useAtom(userAuthAtom);
-  const setUserState = useSetAtom(userAtom);
-  const setProfileImageUrlState = useSetAtom(profileImageUrlAtom);
-
-  useEffect(() => {
-    const unsubscribe = onAuthStateChanged(firebaseAuth, (user) => {
-      setUserAuthState(user);
-    });
-    return () => {
-      unsubscribe();
-    };
-  }, [setUserAuthState]);
-
-  useEffect(() => {
-    if (!userAuthState) return;
-    const unsubscribe = onSnapshot(
-      doc(firebaseFirestore, FirestoreDatabaseNames.USERS, userAuthState.uid),
-      async (doc) => {
-        if (doc.exists()) {
-          const data = doc.data() as UserInterface;
-          setUserState(data);
-          if (data.profileImage) {
-            const downloadURL = await getDownloadURL(
-              ref(firebaseStorage, data.profileImage)
-            );
-            setProfileImageUrlState(downloadURL);
-          }
-        }
-      }
-    );
-    return () => {
-      unsubscribe();
-    };
-  }, [setProfileImageUrlState, setUserState, userAuthState]);
+  // const [userAuthState, setUserAuthState] = useAtom(userAuthAtom);
+  // const setUserState = useSetAtom(userAtom);
+  // const setProfileImageUrlState = useSetAtom(profileImageUrlAtom);
+  // useEffect(() => {
+  //   const unsubscribe = onAuthStateChanged(firebaseAuth, (user) => {
+  //     setUserAuthState(user);
+  //   });
+  //   return () => {
+  //     unsubscribe();
+  //   };
+  // }, [setUserAuthState]);
+  // useEffect(() => {
+  //   if (!userAuthState) return;
+  //   const unsubscribe = onSnapshot(
+  //     doc(firebaseFirestore, FirestoreDatabaseNames.USERS, userAuthState.uid),
+  //     async (doc) => {
+  //       if (doc.exists()) {
+  //         const data = doc.data() as UserInterface;
+  //         setUserState(data);
+  //         if (data.profileImage) {
+  //           const downloadURL = await getDownloadURL(
+  //             ref(firebaseStorage, data.profileImage)
+  //           );
+  //           setProfileImageUrlState(downloadURL);
+  //         }
+  //       }
+  //     }
+  //   );
+  //   return () => {
+  //     unsubscribe();
+  //   };
+  // }, [setProfileImageUrlState, setUserState, userAuthState]);
 };
