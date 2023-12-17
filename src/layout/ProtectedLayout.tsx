@@ -36,11 +36,11 @@ const ProtectedLayout = () => {
   );
 
   if (globalLoadingState) return <GlobalLoading />;
-
-  return firebaseAuth.currentUser !== null ? (
-    withLayout
-  ) : (
-    <Navigate to={RouteNames.LOGIN} />
-  );
+  return withLayout;
+  // return firebaseAuth.currentUser !== null ? (
+  //   withLayout
+  // ) : (
+  //   <Navigate to={RouteNames.LOGIN} />
+  // );
 };
 export default ProtectedLayout;

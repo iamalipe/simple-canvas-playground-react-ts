@@ -33,6 +33,8 @@ const PublicLayout = () => {
     </>
   );
 
+  return <Navigate to={RouteNames.HOME} />;
+
   return firebaseAuth.currentUser === null ? (
     withLayout
   ) : (
