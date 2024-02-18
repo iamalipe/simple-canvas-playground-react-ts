@@ -50,7 +50,7 @@ const VirtualWorld = () => {
   return (
     <div className="flex-1 w-full overflow-hidden flex flex-col">
       <div className="bg-base-200 flex-none flex items-center justify-between h-12 px-4 pl-12 sm:pl-4">
-        <h1 className="text-lg">Generate Maze {VIRTUALWORLD_VERSION}</h1>
+        <h1 className="text-lg">Virtual World {VIRTUALWORLD_VERSION}</h1>
       </div>
       <div className="flex-1 p-4 overflow-auto">
         <canvas
