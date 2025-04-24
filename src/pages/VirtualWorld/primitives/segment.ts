@@ -11,7 +11,7 @@ export class Segment {
 
   draw(
     ctx: CanvasRenderingContext2D,
-    { width = 2, color = "black", dash = [] } = {}
+    { width = 2, color = "black", dash = [] as number[] } = {}
   ) {
     ctx.beginPath();
     ctx.lineWidth = width;

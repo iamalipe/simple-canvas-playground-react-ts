@@ -5,27 +5,38 @@ import { SNAKEGAME_VERSION } from "../pages/SnakeGame/SnakeGame";
 import { GENERATE_MAZE_VERSION } from "../pages/GenerateMaze/GenerateMaze";
 import { PATHFINDING_VERSION } from "../pages/PathFindingX/PathFinding";
 import { VIRTUALWORLD_VERSION } from "../pages/VirtualWorld/VirtualWorld";
+import { SELFDRIVINGCAR_VERSION } from "../pages/SelfDrivingCar/SelfDrivingCar";
 
 const PROGRAM_LIST = [
   {
     title: "Snake Game " + SNAKEGAME_VERSION,
     sub: "Start: 30/08/2023 End: 03/09/2023",
     path: RouteNames.SNAKEGAME,
+    type: "Completed",
   },
   {
     title: "Generate Maze " + GENERATE_MAZE_VERSION,
     sub: "Start: 03/09/2023 End: 04/09/2023",
     path: RouteNames.GENERATE_MAZE,
+    type: "Completed",
   },
   {
     title: "Path Finding " + PATHFINDING_VERSION,
     sub: "Start: 05/09/2023 End: ",
     path: RouteNames.PATHFINDING,
+    type: "Work in progress",
   },
   {
     title: "Virtual World " + VIRTUALWORLD_VERSION,
     sub: "Start: 14/12/2023 End: ",
     path: RouteNames.VIRTUALWORLD,
+    type: "Work in progress",
+  },
+  {
+    title: "Self Driving Car " + SELFDRIVINGCAR_VERSION,
+    sub: "Start: 14/12/2023 End: ",
+    path: RouteNames.SELFDRIVINGCAR,
+    type: "Work in progress",
   },
 ];
 
@@ -34,6 +45,7 @@ import.meta.env.DEV &&
     title: "Test Me",
     sub: "This only work on DEV",
     path: RouteNames.TEST,
+    type: "Testing",
   });
 
 const Sidebar = () => {
@@ -98,6 +110,7 @@ interface RenderProgramListProps {
   data: {
     title: string;
     sub: string;
+    type: string;
     path: RouteNames;
   };
 }
@@ -114,11 +127,20 @@ const RenderProgramList: React.FC<RenderProgramListProps> = ({ data }) => {
     <>
       <div
         onClick={onOpenProgram}
-        className="cursor-pointer flex-none flex h-16 px-2 py-1 text-sm border-y border-y-base-200 hover:bg-base-300 hover:border-y-base-300"
+        className="cursor-pointer flex-none flex px-2 py-1 text-sm border-y border-y-base-200 hover:bg-base-300 hover:border-y-base-300"
       >
         <div className="flex-1 flex flex-col justify-center whitespace-nowrap overflow-hidden ml-2">
           <div className="font-medium">{data.title}</div>
           <span className="font-light">{data.sub}</span>
+          {data.type !== "Completed" ? (
+            <div className="daisy-badge daisy-badge-error flex-none self-end mb-1">
+              {data.type}
+            </div>
+          ) : (
+            <div className="daisy-badge daisy-badge-success flex-none self-end mb-1">
+              {data.type}
+            </div>
+          )}
         </div>
       </div>
     </>

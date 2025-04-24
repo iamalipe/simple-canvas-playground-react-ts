@@ -1,6 +1,4 @@
 import { ThemeChangeButton } from "../components/buttons";
-import { ProfilePopup } from "../components/popups";
-import { firebaseAuth } from "../hooks";
 
 const Header = () => {
   return (
@@ -10,7 +8,7 @@ const Header = () => {
           Simple{" "}
           <span className="font-bold text-primary">Canvas Playground</span>
         </h1>
-        {firebaseAuth.currentUser ? <ProfilePopup /> : <ThemeChangeButton />}
+        <ThemeChangeButton />
       </div>
     </>
   );

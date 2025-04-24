@@ -1,10 +1,7 @@
 import Footer from "./Footer";
 import Header from "./Header";
 import Sidebar from "./SideBar";
-import { RouteNames } from "../types";
-import { Outlet, Navigate } from "react-router-dom";
-import { SettingModal } from "../components/modals";
-import { firebaseAuth } from "../hooks";
+import { Outlet } from "react-router-dom";
 import { useEffect } from "react";
 import GlobalLoading from "./GlobalLoading";
 import { useAtom } from "jotai";
@@ -17,14 +14,13 @@ const ProtectedLayout = () => {
   useEffect(() => {
     setTimeout(() => {
       setGlobalLoadingState(false);
-    }, 750);
+    }, 250);
   }, [setGlobalLoadingState]);
 
   const withLayout = (
     <>
       <GlobalLoading />
-      <div className="container mx-auto h-full relative flex flex-col bg-base-100 text-base-content">
-        <SettingModal />
+      <div className="mx-auto h-full relative flex flex-col bg-base-100 text-base-content">
         <Header />
         <div className="flex-1 w-full flex overflow-hidden sm:overflow-auto">
           <Sidebar />
@@ -37,10 +33,5 @@ const ProtectedLayout = () => {
 
   if (globalLoadingState) return <GlobalLoading />;
   return withLayout;
-  // return firebaseAuth.currentUser !== null ? (
-  //   withLayout
-  // ) : (
-  //   <Navigate to={RouteNames.LOGIN} />
-  // );
 };
 export default ProtectedLayout;
