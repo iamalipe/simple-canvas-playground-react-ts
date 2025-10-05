@@ -1,6 +1,11 @@
 import { ThemeChangeButton } from "../components/buttons";
 
 const Header = () => {
+  const onToggle = () => {
+    const ele = document.getElementById("side-bar-toggle");
+    if (ele) ele.click();
+  };
+
   return (
     <>
       <div className="w-full bg-base-100 border-b border-b-neutral flex-none h-12 flex overflow-auto items-center px-2 md:px-12">
@@ -8,7 +13,15 @@ const Header = () => {
           Simple{" "}
           <span className="font-bold text-primary">Canvas Playground</span>
         </h1>
-        <ThemeChangeButton />
+        <div className="flex items-center ml-auto">
+          <button
+            onClick={onToggle}
+            className="daisy-btn daisy-btn-accent daisy-btn-sm mr-4"
+          >
+            Toggle
+          </button>
+          <ThemeChangeButton />
+        </div>
       </div>
     </>
   );

@@ -18,7 +18,7 @@ export const ThemeChangeButton = () => {
   }, [theme]);
 
   return (
-    <div className="flex sm:gap-4 gap-2 items-center ml-auto">
+    <div className="flex sm:gap-4 gap-2 items-center">
       <span className="hidden sm:block">Theme</span>
       <select
         className="daisy-select daisy-select-bordered daisy-select-xs sm:daisy-select-sm w-20 sm:w-full max-w-xs"

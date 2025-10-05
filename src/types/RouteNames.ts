@@ -8,4 +8,5 @@ export enum RouteNames {
   PATHFINDING = "/pathfinding",
   VIRTUALWORLD = "/virtualworld",
   SELFDRIVINGCAR = "/selfdrivingcar",
+  PAPERIO = "/paperio",
 }

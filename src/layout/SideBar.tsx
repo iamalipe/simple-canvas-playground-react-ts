@@ -1,11 +1,11 @@
 import { useState } from "react";
-import { RouteNames } from "../types";
 import { useNavigate } from "react-router-dom";
-import { SNAKEGAME_VERSION } from "../pages/SnakeGame/SnakeGame";
 import { GENERATE_MAZE_VERSION } from "../pages/GenerateMaze/GenerateMaze";
 import { PATHFINDING_VERSION } from "../pages/PathFindingX/PathFinding";
-import { VIRTUALWORLD_VERSION } from "../pages/VirtualWorld/VirtualWorld";
 import { SELFDRIVINGCAR_VERSION } from "../pages/SelfDrivingCar/SelfDrivingCar";
+import { SNAKEGAME_VERSION } from "../pages/SnakeGame/SnakeGame";
+import { VIRTUALWORLD_VERSION } from "../pages/VirtualWorld/VirtualWorld";
+import { RouteNames } from "../types";
 
 const PROGRAM_LIST = [
   {
@@ -36,6 +36,12 @@ const PROGRAM_LIST = [
     title: "Self Driving Car " + SELFDRIVINGCAR_VERSION,
     sub: "Start: 14/12/2023 End: ",
     path: RouteNames.SELFDRIVINGCAR,
+    type: "Work in progress",
+  },
+  {
+    title: "Paper Io",
+    sub: "Start: 05/10/2025 End: ",
+    path: RouteNames.PAPERIO,
     type: "Work in progress",
   },
 ];

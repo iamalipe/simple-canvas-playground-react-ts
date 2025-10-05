@@ -8,7 +8,7 @@
 }
 
 #side-bar-toggle:checked + .side-nav-toggle-target {
-  @apply w-0 sm:w-[240px] md:w-[360px];
+  @apply w-0;
 }
 .side-nav-toggle-button {
   left: calc(100% - 40px);
@@ -83,7 +83,6 @@
   animation: this-is-loading-animation 18s ease infinite;
 }
 
-
 @keyframes this-is-loading-animation {
   0% {
     background-position: 0% 50%;
@@ -95,4 +94,3 @@
     background-position: 0% 50%;
   }
 }
-
