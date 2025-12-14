@@ -1,0 +1,1001 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>2D Track Racer</title>
+    <style>
+      body {
+        margin: 0;
+        overflow: hidden;
+        background-color: #2c3e50; /* Fallback */
+        font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+        touch-action: none; /* Prevent zooming on touch */
+      }
+
+      canvas {
+        display: block;
+      }
+
+      #ui-layer {
+        position: absolute;
+        top: 20px;
+        left: 20px;
+        background: rgba(0, 0, 0, 0.8);
+        color: white;
+        padding: 20px;
+        border-radius: 12px;
+        backdrop-filter: blur(5px);
+        border: 1px solid rgba(255, 255, 255, 0.1);
+        max-width: 300px;
+        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.3);
+        pointer-events: auto;
+      }
+
+      h1 {
+        margin: 0 0 15px 0;
+        font-size: 1.5rem;
+        color: #3498db;
+        text-transform: uppercase;
+        letter-spacing: 2px;
+      }
+
+      .control-group {
+        margin-bottom: 15px;
+      }
+
+      .checkbox-group {
+        display: flex;
+        align-items: center;
+        margin-bottom: 15px;
+        color: #bdc3c7;
+        font-size: 0.9rem;
+      }
+
+      .checkbox-group input {
+        width: auto;
+        margin-right: 10px;
+        transform: scale(1.2);
+        cursor: pointer;
+      }
+
+      label {
+        display: block;
+        margin-bottom: 5px;
+        font-size: 0.9rem;
+        color: #bdc3c7;
+      }
+
+      input[type="range"] {
+        width: 100%;
+        cursor: pointer;
+      }
+
+      button {
+        width: 100%;
+        padding: 12px;
+        background-color: #3498db;
+        color: white;
+        border: none;
+        border-radius: 6px;
+        font-size: 1rem;
+        font-weight: bold;
+        cursor: pointer;
+        transition: background 0.2s, transform 0.1s;
+      }
+
+      button:hover {
+        background-color: #2980b9;
+      }
+
+      button:active {
+        transform: scale(0.98);
+      }
+
+      #btnToggleMap {
+        background-color: #8e44ad;
+        margin-bottom: 10px;
+      }
+      #btnToggleMap:hover {
+        background-color: #9b59b6;
+      }
+
+      #status-display {
+        margin-top: 15px;
+        padding-top: 15px;
+        border-top: 1px solid rgba(255, 255, 255, 0.2);
+        font-family: monospace;
+        font-size: 1.1rem;
+      }
+
+      .hud {
+        position: absolute;
+        top: 20px;
+        right: 20px;
+        text-align: right;
+        color: white;
+        font-family: monospace;
+        font-size: 1.5rem;
+        font-weight: bold;
+        text-shadow: 2px 2px 0 #000;
+        pointer-events: none;
+      }
+
+      #message-overlay {
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        background: rgba(0, 0, 0, 0.7);
+        z-index: 10;
+        opacity: 0;
+        pointer-events: none;
+        transition: opacity 0.3s;
+      }
+
+      #message-overlay.visible {
+        opacity: 1;
+        pointer-events: auto;
+      }
+
+      .message-box {
+        background: white;
+        padding: 40px;
+        border-radius: 20px;
+        text-align: center;
+        box-shadow: 0 10px 25px rgba(0, 0, 0, 0.5);
+      }
+
+      .message-box h2 {
+        margin-top: 0;
+        font-size: 2.5rem;
+        color: #2c3e50;
+      }
+
+      .controls-hint {
+        font-size: 0.8rem;
+        color: #aaa;
+        margin-top: 5px;
+      }
+
+      /* Mobile controls */
+      #mobile-controls {
+        position: absolute;
+        bottom: 20px;
+        width: 100%;
+        height: 150px;
+        display: none; /* Shown via JS detection */
+        pointer-events: none;
+      }
+
+      .touch-btn {
+        position: absolute;
+        width: 80px;
+        height: 80px;
+        background: rgba(255, 255, 255, 0.2);
+        border: 2px solid rgba(255, 255, 255, 0.5);
+        border-radius: 50%;
+        pointer-events: auto;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        color: white;
+        font-size: 24px;
+        user-select: none;
+      }
+
+      .touch-btn:active {
+        background: rgba(255, 255, 255, 0.4);
+      }
+
+      #btn-left {
+        left: 20px;
+        bottom: 20px;
+      }
+      #btn-right {
+        left: 120px;
+        bottom: 20px;
+      }
+      #btn-accel {
+        right: 20px;
+        bottom: 20px;
+        background: rgba(46, 204, 113, 0.3);
+        border-color: #2ecc71;
+      }
+      #btn-brake {
+        right: 120px;
+        bottom: 20px;
+        background: rgba(231, 76, 60, 0.3);
+        border-color: #e74c3c;
+        font-size: 16px;
+      }
+    </style>
+  </head>
+  <body>
+    <canvas id="gameCanvas"></canvas>
+
+    <!-- Settings UI -->
+    <div id="ui-layer">
+      <h1>Track Generator</h1>
+
+      <div class="control-group">
+        <label for="laneCount">Lanes: <span id="laneCountVal">3</span></label>
+        <input type="range" id="laneCount" min="2" max="6" value="3" />
+      </div>
+
+      <div class="control-group">
+        <label for="laneWidth"
+          >Lane Width: <span id="laneWidthVal">60</span>px</label
+        >
+        <input type="range" id="laneWidth" min="40" max="100" value="60" />
+      </div>
+
+      <div class="control-group">
+        <label for="trackLength">Track Complexity</label>
+        <input type="range" id="trackLength" min="50" max="300" value="100" />
+      </div>
+
+      <div class="checkbox-group">
+        <input type="checkbox" id="chkCrash" />
+        <label for="chkCrash" style="display: inline; margin: 0"
+          >Hard Mode (Crash on Edge)</label
+        >
+      </div>
+
+      <button id="btnToggleMap">View Full Map</button>
+      <button id="btnGenerate">Generate New Track</button>
+      <div class="controls-hint">Arrows / WASD to drive</div>
+
+      <div id="status-display">Progress: <span id="progressVal">0%</span></div>
+    </div>
+
+    <!-- HUD -->
+    <div class="hud">
+      <div id="timer">00:00.00</div>
+      <div id="speed">0 km/h</div>
+    </div>
+
+    <!-- End Game Overlay -->
+    <div id="message-overlay">
+      <div class="message-box">
+        <h2 id="end-title">FINISHED!</h2>
+        <p id="end-time">Time: 00:00.00</p>
+        <button id="btnRestart">Play Again</button>
+      </div>
+    </div>
+
+    <!-- Mobile Controls -->
+    <div id="mobile-controls">
+      <div id="btn-left" class="touch-btn">◀</div>
+      <div id="btn-right" class="touch-btn">▶</div>
+      <div id="btn-brake" class="touch-btn">STOP</div>
+      <div id="btn-accel" class="touch-btn">▲</div>
+    </div>
+
+    <script>
+      /**
+       * 2D Racing Game Logic
+       */
+      const canvas = document.getElementById("gameCanvas");
+      const ctx = canvas.getContext("2d", { alpha: false }); // Optimize for no transparency on base
+
+      // Game State
+      const GAME = {
+        state: "PLAYING", // PLAYING, FINISHED, CRASHED
+        startTime: 0,
+        endTime: 0,
+        dt: 0,
+        lastTime: 0,
+        camera: { x: 0, y: 0, zoom: 1 },
+        viewMode: "FOLLOW", // 'FOLLOW', 'MAP'
+        trackBounds: { minX: 0, maxX: 0, minY: 0, maxY: 0 },
+      };
+
+      // Inputs
+      const INPUT = {
+        up: false,
+        down: false,
+        left: false,
+        right: false,
+      };
+
+      // Configuration
+      const CONFIG = {
+        laneCount: 3,
+        laneWidth: 60,
+        trackPoints: 100,
+        trackSegmentLength: 40,
+        grassColor: "#3a6b3a", // Darker green for less eye strain
+        roadColor: "#555555",
+        lineColor: "#ffffff",
+        shoulderColor: "#c0392b",
+        shoulderAltColor: "#ecf0f1",
+        crashOnEdge: false,
+      };
+
+      // Objects
+      const car = {
+        x: 0,
+        y: 0,
+        width: 24,
+        height: 44,
+        angle: -Math.PI / 2, // Facing Up
+        speed: 0,
+        maxSpeed: 800,
+        acceleration: 400,
+        friction: 200,
+        turnSpeed: 2.5,
+        color: "#3498db",
+        offRoad: false,
+      };
+
+      let track = []; // Array of points {x, y}
+
+      // --- Initialization ---
+
+      function resize() {
+        canvas.width = window.innerWidth;
+        canvas.height = window.innerHeight;
+
+        // Mobile detection for controls
+        if ("ontouchstart" in window || navigator.maxTouchPoints > 0) {
+          document.getElementById("mobile-controls").style.display = "block";
+        }
+      }
+      window.addEventListener("resize", resize);
+      resize();
+
+      // --- Track Generation ---
+
+      function generateTrack() {
+        track = [];
+
+        // Start point (0,0)
+        let x = 0;
+        let y = 0;
+        let angle = -Math.PI / 2; // Pointing up
+
+        // Push starting straight
+        for (let i = 0; i < 5; i++) {
+          track.push({ x, y });
+          y -= CONFIG.trackSegmentLength;
+        }
+
+        // Procedural generation
+        const totalPoints = parseInt(
+          document.getElementById("trackLength").value
+        );
+
+        for (let i = 0; i < totalPoints; i++) {
+          // Random curvature
+          // Bias slightly towards keeping current angle, but add randomness
+          const curvature = (Math.random() - 0.5) * 0.8;
+          angle += curvature;
+
+          // Clamp angle to prevent looping back down too easily (stay generally 'upwards')
+          // Although looping is fun, for "start to finish" we want general forward progress
+          if (angle > 0) angle = -0.1;
+          if (angle < -Math.PI) angle = -Math.PI + 0.1;
+
+          x += Math.cos(angle) * CONFIG.trackSegmentLength;
+          y += Math.sin(angle) * CONFIG.trackSegmentLength;
+
+          track.push({ x, y });
+        }
+
+        // Finish straight
+        for (let i = 0; i < 10; i++) {
+          // Align to last angle
+          x += Math.cos(angle) * CONFIG.trackSegmentLength;
+          y += Math.sin(angle) * CONFIG.trackSegmentLength;
+          track.push({ x, y });
+        }
+
+        // Smooth the track
+        track = smoothTrack(track, 4); // 4 iterations of smoothing
+
+        updateTrackBounds();
+
+        resetCar();
+        GAME.state = "PLAYING";
+        GAME.startTime = Date.now();
+        document.getElementById("message-overlay").classList.remove("visible");
+
+        // Reset view to follow when new track starts
+        GAME.viewMode = "FOLLOW";
+        document.getElementById("btnToggleMap").innerText = "View Full Map";
+      }
+
+      function updateTrackBounds() {
+        let minX = Infinity,
+          maxX = -Infinity,
+          minY = Infinity,
+          maxY = -Infinity;
+        track.forEach((p) => {
+          if (p.x < minX) minX = p.x;
+          if (p.x > maxX) maxX = p.x;
+          if (p.y < minY) minY = p.y;
+          if (p.y > maxY) maxY = p.y;
+        });
+
+        // Add margin for road width
+        const margin = (CONFIG.laneCount * CONFIG.laneWidth) / 2 + 150;
+        GAME.trackBounds = {
+          minX: minX - margin,
+          maxX: maxX + margin,
+          minY: minY - margin,
+          maxY: maxY + margin,
+        };
+      }
+
+      function smoothTrack(points, iterations) {
+        let smoothed = [...points];
+        for (let iter = 0; iter < iterations; iter++) {
+          let newPoints = [smoothed[0]]; // Keep start
+          for (let i = 1; i < smoothed.length - 1; i++) {
+            const prev = smoothed[i - 1];
+            const curr = smoothed[i];
+            const next = smoothed[i + 1];
+
+            // Average position
+            newPoints.push({
+              x: (prev.x + curr.x + next.x) / 3,
+              y: (prev.y + curr.y + next.y) / 3,
+            });
+          }
+          newPoints.push(smoothed[smoothed.length - 1]); // Keep end
+          smoothed = newPoints;
+        }
+        return smoothed;
+      }
+
+      function resetCar() {
+        // Position car at start of track, facing the direction of the first segment
+        if (track.length > 1) {
+          const p1 = track[0];
+          const p2 = track[1];
+          const angle = Math.atan2(p2.y - p1.y, p2.x - p1.x);
+
+          car.x = p1.x;
+          car.y = p1.y;
+          car.angle = angle;
+          car.speed = 0;
+        }
+      }
+
+      // --- Physics & Logic ---
+
+      function updatePhysics(dt) {
+        if (GAME.state === "FINISHED" || GAME.state === "CRASHED") return;
+
+        // Input Handling
+        if (INPUT.up) {
+          car.speed += car.acceleration * dt;
+        } else if (INPUT.down) {
+          car.speed -= car.acceleration * dt;
+        } else {
+          // Natural friction
+          if (car.speed > 0) car.speed -= car.friction * dt;
+          if (car.speed < 0) car.speed += car.friction * dt;
+          // Stop if slow enough
+          if (Math.abs(car.speed) < 10) car.speed = 0;
+        }
+
+        // Steering (only if moving)
+        if (Math.abs(car.speed) > 10) {
+          const turnMultiplier = car.speed / car.maxSpeed; // Turn slower at low speeds? No, usually turn tighter.
+          // Let's just standard turning but flip for reverse
+          const dir = car.speed > 0 ? 1 : -1;
+          if (INPUT.left) car.angle -= car.turnSpeed * dt * dir;
+          if (INPUT.right) car.angle += car.turnSpeed * dt * dir;
+        }
+
+        // Calculate Position
+        car.x += Math.cos(car.angle) * car.speed * dt;
+        car.y += Math.sin(car.angle) * car.speed * dt;
+
+        // Track Collision / Off-road detection
+        checkOffRoad(dt);
+        if (GAME.state === "CRASHED") return; // Exit if crashed in checkOffRoad
+
+        checkProgress();
+
+        // Cap Speed
+        // Off-road cap
+        const currentMax = car.offRoad ? 150 : car.maxSpeed;
+        if (car.speed > currentMax) car.speed = currentMax; // Slow down instantly if hitting grass
+        if (car.speed < -currentMax / 2) car.speed = -currentMax / 2;
+
+        // Camera follow
+        // Smooth lerp targets based on view mode
+        let targetX, targetY, targetZoom;
+
+        if (GAME.viewMode === "MAP") {
+          const w = GAME.trackBounds.maxX - GAME.trackBounds.minX;
+          const h = GAME.trackBounds.maxY - GAME.trackBounds.minY;
+          const cx = (GAME.trackBounds.minX + GAME.trackBounds.maxX) / 2;
+          const cy = (GAME.trackBounds.minY + GAME.trackBounds.maxY) / 2;
+
+          // Calculate fit scale
+          const scaleX = canvas.width / w;
+          const scaleY = canvas.height / h;
+          targetZoom = Math.min(scaleX, scaleY) * 0.9; // 90% fit
+          targetX = cx;
+          targetY = cy;
+        } else {
+          targetX = car.x;
+          targetY = car.y;
+          targetZoom = 1;
+        }
+
+        GAME.camera.x += (targetX - GAME.camera.x) * 5 * dt;
+        GAME.camera.y += (targetY - GAME.camera.y) * 5 * dt;
+        GAME.camera.zoom += (targetZoom - GAME.camera.zoom) * 5 * dt;
+      }
+
+      function checkOffRoad(dt) {
+        // Find closest point on track spine
+        // Simple approach: check distance to all segments, find min distance
+        // Optimization: Only check segments near the current progress index (not implemented here for simplicity,
+        // but we scan the whole array. For < 500 points it's fine).
+
+        let minDistSq = Infinity;
+        let closestIndex = -1;
+
+        // To make it smoother, we treat the track as line segments
+        for (let i = 0; i < track.length - 1; i++) {
+          const p1 = track[i];
+          const p2 = track[i + 1];
+          const distSq = distToSegmentSquared(
+            car.x,
+            car.y,
+            p1.x,
+            p1.y,
+            p2.x,
+            p2.y
+          );
+          if (distSq < minDistSq) {
+            minDistSq = distSq;
+            closestIndex = i;
+          }
+        }
+
+        const totalTrackWidth = CONFIG.laneCount * CONFIG.laneWidth;
+        const halfWidth = totalTrackWidth / 2;
+
+        // Allow a little bit of buffer (car width)
+        const safeDist = halfWidth - car.width / 2;
+
+        if (minDistSq > safeDist * safeDist) {
+          car.offRoad = true;
+          if (CONFIG.crashOnEdge) {
+            crashGame();
+          }
+        } else {
+          car.offRoad = false;
+        }
+      }
+
+      function checkProgress() {
+        // Check distance to end
+        const endNode = track[track.length - 1];
+        const distToEnd = Math.hypot(car.x - endNode.x, car.y - endNode.y);
+
+        // Total length estimation (rough)
+        const totalLen = track.length * CONFIG.trackSegmentLength;
+        // Current index approximation
+        let minDist = Infinity;
+        let idx = 0;
+        for (let i = 0; i < track.length; i++) {
+          const d = (car.x - track[i].x) ** 2 + (car.y - track[i].y) ** 2;
+          if (d < minDist) {
+            minDist = d;
+            idx = i;
+          }
+        }
+
+        const pct = Math.floor((idx / track.length) * 100);
+        document.getElementById("progressVal").innerText = pct + "%";
+
+        // Win condition
+        if (idx >= track.length - 2) {
+          finishGame();
+        }
+      }
+
+      function crashGame() {
+        if (GAME.state !== "PLAYING") return;
+        GAME.state = "CRASHED";
+
+        document.getElementById("end-title").innerText = "CRASHED!";
+        document.getElementById("end-title").style.color = "#e74c3c";
+        document.getElementById("end-time").innerText = "You went off track!";
+        document.getElementById("message-overlay").classList.add("visible");
+      }
+
+      function finishGame() {
+        if (GAME.state === "FINISHED") return;
+        GAME.state = "FINISHED";
+        GAME.endTime = Date.now();
+
+        const timeMs = GAME.endTime - GAME.startTime;
+        const minutes = Math.floor(timeMs / 60000);
+        const seconds = Math.floor((timeMs % 60000) / 1000);
+        const ms = Math.floor((timeMs % 1000) / 10);
+
+        const timeStr = `${pad(minutes)}:${pad(seconds)}.${pad(ms)}`;
+
+        document.getElementById("end-title").innerText = "FINISHED!";
+        document.getElementById("end-title").style.color = "#2c3e50";
+        document.getElementById("end-time").innerText = "Time: " + timeStr;
+        document.getElementById("message-overlay").classList.add("visible");
+      }
+
+      // Math Helpers
+      function sqr(x) {
+        return x * x;
+      }
+      function dist2(v, w) {
+        return sqr(v.x - w.x) + sqr(v.y - w.y);
+      }
+      function distToSegmentSquared(pX, pY, vX, vY, wX, wY) {
+        const l2 = sqr(vX - wX) + sqr(vY - wY);
+        if (l2 === 0) return sqr(pX - vX) + sqr(pY - vY);
+        let t = ((pX - vX) * (wX - vX) + (pY - vY) * (wY - vY)) / l2;
+        t = Math.max(0, Math.min(1, t));
+        return sqr(pX - (vX + t * (wX - vX))) + sqr(pY - (vY + t * (wY - vY)));
+      }
+
+      // --- Rendering ---
+
+      function draw() {
+        // Clear background (grass)
+        ctx.fillStyle = CONFIG.grassColor;
+        ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+        ctx.save();
+
+        // Camera Transform
+        const cx = canvas.width / 2;
+        const cy = canvas.height / 2;
+        ctx.translate(cx, cy);
+        ctx.scale(GAME.camera.zoom, GAME.camera.zoom);
+        ctx.translate(-GAME.camera.x, -GAME.camera.y);
+
+        // Draw Track
+        drawTrack();
+
+        // Draw Car
+        drawCar();
+
+        ctx.restore();
+
+        // Update HUD
+        updateHUD();
+
+        requestAnimationFrame(gameLoop);
+      }
+
+      function drawTrack() {
+        const totalWidth = CONFIG.laneCount * CONFIG.laneWidth;
+
+        // 1. Draw Asphalt (Main Road)
+        ctx.lineCap = "round";
+        ctx.lineJoin = "round";
+        ctx.strokeStyle = CONFIG.roadColor;
+        ctx.lineWidth = totalWidth;
+
+        ctx.beginPath();
+        if (track.length > 0) ctx.moveTo(track[0].x, track[0].y);
+        for (let i = 1; i < track.length; i++) {
+          ctx.lineTo(track[i].x, track[i].y);
+        }
+        ctx.stroke();
+
+        // 2. Draw Borders (Curbs)
+        ctx.strokeStyle = "#000000"; // Thin outline
+        ctx.lineWidth = totalWidth + 4;
+        ctx.globalCompositeOperation = "destination-over"; // Draw behind
+        ctx.stroke();
+        ctx.globalCompositeOperation = "source-over"; // Reset
+
+        // 3. Draw Curbs (Red/White stripes) - Simulated by a dashed line slightly wider
+        // This is computationally expensive to do perfectly with strokes, so we use a simple dashed border
+        ctx.strokeStyle = CONFIG.shoulderColor;
+        ctx.lineWidth = totalWidth + 20;
+        ctx.setLineDash([40, 40]);
+        ctx.lineDashOffset = 0;
+        ctx.globalCompositeOperation = "destination-over";
+        ctx.stroke();
+
+        ctx.strokeStyle = CONFIG.shoulderAltColor;
+        ctx.lineDashOffset = 40;
+        ctx.globalCompositeOperation = "destination-over";
+        ctx.stroke();
+        ctx.globalCompositeOperation = "source-over";
+        ctx.setLineDash([]); // Reset
+
+        // 4. Draw Lane Markers
+        ctx.strokeStyle = CONFIG.lineColor;
+        ctx.lineWidth = 2;
+        ctx.setLineDash([20, 30]);
+
+        // Calculate offset for each lane line
+        // If 3 lanes, we need 2 lines.
+        // Lane 1 center is -width/2 + laneWidth/2.
+        // Divider 1 is at -width/2 + laneWidth.
+        const halfWidth = totalWidth / 2;
+
+        // We can't easily offset a stroke in canvas 2d without complex math for the path.
+        // Simplified approach: Draw the path multiple times with offsets?
+        // No, standard stroke doesn't support offset.
+        // "Good enough" approach for 2D top down:
+        // Just draw the center line if odd lanes, or do nothing?
+        // Correct approach: We have the spine points. We can compute the normals and offset vertices.
+
+        // To keep it performant and simple for this request:
+        // We will just draw the center spine if it exists, or skip.
+        // Actually, let's just draw the spine as a dashed line for now.
+        // For true multi-lane rendering, we'd need to generate mesh polygons.
+        // Let's stick to a center dashed line if lanes > 1 to indicate flow.
+
+        if (CONFIG.laneCount > 1) {
+          // Approximate lane dividers
+          // We iterate points and draw offset lines segment by segment
+          for (let l = 1; l < CONFIG.laneCount; l++) {
+            const offset = -halfWidth + l * CONFIG.laneWidth;
+            drawOffsetPath(track, offset);
+          }
+        }
+
+        // 5. Start / Finish Lines
+        if (track.length > 0) {
+          drawCheckeredLine(track[0], track[1], totalWidth);
+          drawCheckeredLine(
+            track[track.length - 2],
+            track[track.length - 1],
+            totalWidth
+          );
+        }
+      }
+
+      // Helper to draw offset lines for lanes
+      function drawOffsetPath(points, offset) {
+        ctx.beginPath();
+        for (let i = 0; i < points.length - 1; i++) {
+          const p1 = points[i];
+          const p2 = points[i + 1];
+
+          // Calculate normal
+          const dx = p2.x - p1.x;
+          const dy = p2.y - p1.y;
+          const len = Math.sqrt(dx * dx + dy * dy);
+          const nx = -dy / len;
+          const ny = dx / len;
+
+          const ox1 = p1.x + nx * offset;
+          const oy1 = p1.y + ny * offset;
+          const ox2 = p2.x + nx * offset;
+          const oy2 = p2.y + ny * offset;
+
+          if (i === 0) ctx.moveTo(ox1, oy1);
+          ctx.lineTo(ox2, oy2);
+        }
+        ctx.stroke();
+      }
+
+      function drawCheckeredLine(p1, p2, width) {
+        ctx.save();
+        ctx.translate(p1.x, p1.y);
+        const angle = Math.atan2(p2.y - p1.y, p2.x - p1.x);
+        ctx.rotate(angle);
+
+        const rows = 2;
+        const cols = 8;
+        const checkW = width / cols;
+        const checkH = 20;
+
+        ctx.fillStyle = "white";
+        ctx.fillRect(0, -width / 2, checkH, width); // Base
+
+        ctx.fillStyle = "black";
+        for (let r = 0; r < rows; r++) {
+          for (let c = 0; c < cols; c++) {
+            if ((r + c) % 2 === 0) {
+              ctx.fillRect(0 + r * 10, -width / 2 + c * checkW, 10, checkW);
+            }
+          }
+        }
+
+        ctx.restore();
+      }
+
+      function drawCar() {
+        ctx.save();
+        ctx.translate(car.x, car.y);
+        ctx.rotate(car.angle); // Car usually faces right at 0 rads in standard math, but our assets might differ.
+        // Our car is a box.
+
+        // Shadow
+        ctx.fillStyle = "rgba(0,0,0,0.5)";
+        ctx.fillRect(
+          -car.height / 2 + 5,
+          -car.width / 2 + 5,
+          car.height,
+          car.width
+        );
+
+        // Body
+        ctx.fillStyle = car.color;
+        // Draw as car shape (long rectangle)
+        // Rotate 90 deg because car dimensions are usually Length x Width.
+        // In our config: width=24 (side to side), height=44 (front to back)
+        // So we draw -height/2 to height/2 on X axis
+        ctx.fillRect(-car.height / 2, -car.width / 2, car.height, car.width);
+
+        // Windshield
+        ctx.fillStyle = "#aaddff";
+        ctx.fillRect(0, -car.width / 2 + 2, 10, car.width - 4);
+
+        // Roof
+        ctx.fillStyle = "#2980b9";
+        ctx.fillRect(-10, -car.width / 2 + 2, 10, car.width - 4);
+
+        // Headlights
+        ctx.fillStyle = "yellow";
+        ctx.fillRect(car.height / 2 - 2, -car.width / 2 + 2, 2, 6);
+        ctx.fillRect(car.height / 2 - 2, car.width / 2 - 8, 2, 6);
+
+        // Brake lights
+        if (INPUT.down) {
+          ctx.fillStyle = "#ff0000";
+          ctx.shadowBlur = 10;
+          ctx.shadowColor = "red";
+        } else {
+          ctx.fillStyle = "#880000";
+          ctx.shadowBlur = 0;
+        }
+        ctx.fillRect(-car.height / 2, -car.width / 2 + 2, 2, 6);
+        ctx.fillRect(-car.height / 2, car.width / 2 - 8, 2, 6);
+
+        ctx.restore();
+      }
+
+      function updateHUD() {
+        // Timer
+        if (GAME.state === "PLAYING") {
+          const now = Date.now();
+          const diff = now - GAME.startTime;
+          const minutes = Math.floor(diff / 60000);
+          const seconds = Math.floor((diff % 60000) / 1000);
+          const ms = Math.floor((diff % 1000) / 10);
+          document.getElementById("timer").innerText = `${pad(minutes)}:${pad(
+            seconds
+          )}.${pad(ms)}`;
+        }
+
+        // Speed
+        const speedKmh = Math.floor(Math.abs(car.speed) * 0.1); // Arbitrary scale
+        document.getElementById("speed").innerText = speedKmh + " km/h";
+      }
+
+      function pad(n) {
+        return n < 10 ? "0" + n : n;
+      }
+
+      // --- Loop ---
+
+      function gameLoop() {
+        const now = Date.now();
+        const dt = Math.min((now - GAME.lastTime) / 1000, 0.1); // Cap dt
+        GAME.lastTime = now;
+
+        updatePhysics(dt);
+        draw();
+      }
+
+      // --- Event Listeners ---
+
+      window.addEventListener("keydown", (e) => {
+        switch (e.key) {
+          case "ArrowUp":
+          case "w":
+            INPUT.up = true;
+            break;
+          case "ArrowDown":
+          case "s":
+            INPUT.down = true;
+            break;
+          case "ArrowLeft":
+          case "a":
+            INPUT.left = true;
+            break;
+          case "ArrowRight":
+          case "d":
+            INPUT.right = true;
+            break;
+        }
+      });
+
+      window.addEventListener("keyup", (e) => {
+        switch (e.key) {
+          case "ArrowUp":
+          case "w":
+            INPUT.up = false;
+            break;
+          case "ArrowDown":
+          case "s":
+            INPUT.down = false;
+            break;
+          case "ArrowLeft":
+          case "a":
+            INPUT.left = false;
+            break;
+          case "ArrowRight":
+          case "d":
+            INPUT.right = false;
+            break;
+        }
+      });
+
+      // Touch Controls
+      const btnLeft = document.getElementById("btn-left");
+      const btnRight = document.getElementById("btn-right");
+      const btnAccel = document.getElementById("btn-accel");
+      const btnBrake = document.getElementById("btn-brake");
+
+      const addTouch = (elem, key) => {
+        elem.addEventListener("touchstart", (e) => {
+          e.preventDefault();
+          INPUT[key] = true;
+        });
+        elem.addEventListener("touchend", (e) => {
+          e.preventDefault();
+          INPUT[key] = false;
+        });
+      };
+
+      addTouch(btnLeft, "left");
+      addTouch(btnRight, "right");
+      addTouch(btnAccel, "up");
+      addTouch(btnBrake, "down");
+
+      // UI Controls
+      document.getElementById("laneCount").addEventListener("input", (e) => {
+        CONFIG.laneCount = parseInt(e.target.value);
+        document.getElementById("laneCountVal").innerText = CONFIG.laneCount;
+      });
+
+      document.getElementById("laneWidth").addEventListener("input", (e) => {
+        CONFIG.laneWidth = parseInt(e.target.value);
+        document.getElementById("laneWidthVal").innerText = CONFIG.laneWidth;
+      });
+
+      document.getElementById("chkCrash").addEventListener("change", (e) => {
+        CONFIG.crashOnEdge = e.target.checked;
+      });
+
+      document.getElementById("btnToggleMap").addEventListener("click", (e) => {
+        GAME.viewMode = GAME.viewMode === "FOLLOW" ? "MAP" : "FOLLOW";
+        e.target.innerText =
+          GAME.viewMode === "FOLLOW" ? "View Full Map" : "Follow Car";
+      });
+
+      document
+        .getElementById("btnGenerate")
+        .addEventListener("click", generateTrack);
+      document
+        .getElementById("btnRestart")
+        .addEventListener("click", generateTrack);
+
+      // --- Start ---
+      GAME.lastTime = Date.now();
+      generateTrack();
+      gameLoop();
+    </script>
+  </body>
+</html>

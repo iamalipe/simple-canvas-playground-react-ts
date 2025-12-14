@@ -1,5 +1,6 @@
 import { Route, Routes } from "react-router-dom";
 import ProtectedLayout from "../layout/ProtectedLayout";
+import CarRacing from "../pages/CarRacing/CarRacing";
 import GenerateMaze from "../pages/GenerateMaze/GenerateMaze";
 import Home from "../pages/Home/Home";
 import PaperIo from "../pages/PaperIo/PaperIo";
@@ -22,6 +23,7 @@ const RoutesConfig = () => {
         <Route path={RouteNames.VIRTUALWORLD} element={<VirtualWorld />} />
         <Route path={RouteNames.SELFDRIVINGCAR} element={<SelfDrivingCar />} />
         <Route path={RouteNames.PAPERIO} element={<PaperIo />} />
+        <Route path={RouteNames.CARRACING} element={<CarRacing />} />
         {import.meta.env.DEV && (
           <Route path={RouteNames.TEST} element={<TestMe />} />
         )}

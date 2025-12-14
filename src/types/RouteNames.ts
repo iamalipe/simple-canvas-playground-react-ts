@@ -9,4 +9,5 @@ export enum RouteNames {
   VIRTUALWORLD = "/virtualworld",
   SELFDRIVINGCAR = "/selfdrivingcar",
   PAPERIO = "/paperio",
+  CARRACING = "/car-racing",
 }

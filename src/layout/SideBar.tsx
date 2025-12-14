@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
+import { CARRACING_VERSION } from "../pages/CarRacing/CarRacing";
 import { GENERATE_MAZE_VERSION } from "../pages/GenerateMaze/GenerateMaze";
 import { PATHFINDING_VERSION } from "../pages/PathFindingX/PathFinding";
 import { SELFDRIVINGCAR_VERSION } from "../pages/SelfDrivingCar/SelfDrivingCar";
@@ -19,6 +20,12 @@ const PROGRAM_LIST = [
     sub: "Start: 03/09/2023 End: 04/09/2023",
     path: RouteNames.GENERATE_MAZE,
     type: "Completed",
+  },
+  {
+    title: "Car Racing " + CARRACING_VERSION,
+    sub: "Start: 14/12/2025 End: 14/12/2025",
+    path: RouteNames.CARRACING,
+    type: "Work in progress",
   },
   {
     title: "Path Finding " + PATHFINDING_VERSION,

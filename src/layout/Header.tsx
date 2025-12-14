@@ -18,7 +18,7 @@ const Header = () => {
             onClick={onToggle}
             className="daisy-btn daisy-btn-accent daisy-btn-sm mr-4"
           >
-            Toggle
+            Side Bar
           </button>
           <ThemeChangeButton />
         </div>
