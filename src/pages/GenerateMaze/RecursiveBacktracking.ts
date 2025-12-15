@@ -13,7 +13,7 @@ class RecursiveBacktracking {
   totalCol: number;
   totalRow: number;
   lineWidth: number;
-  intervalRef: NodeJS.Timeout | undefined;
+  intervalRef: ReturnType<typeof setInterval> | undefined;
   animationFrameRef: number | undefined;
   color_base_content: string;
   color_base_100: string;

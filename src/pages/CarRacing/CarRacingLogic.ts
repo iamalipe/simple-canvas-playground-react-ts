@@ -4,6 +4,25 @@ export interface GameConfig {
   laneWidth: number;
   trackComplexity: number;
   crashOnEdge: boolean;
+  showSensors: boolean;
+  aiMode: boolean;
+}
+
+export interface Car {
+  x: number;
+  y: number;
+  width: number;
+  height: number;
+  angle: number;
+  speed: number;
+  maxSpeed: number;
+  acceleration: number;
+  friction: number;
+  turnSpeed: number;
+  color: string;
+  offRoad: boolean;
+  sensor: Sensor | null;
+  brain: NeuralNetwork | null;
 }
 
 export interface UIRefs {
@@ -14,6 +33,224 @@ export interface UIRefs {
   endTime: HTMLParagraphElement | null;
   overlay: HTMLDivElement | null;
   mobileControls: HTMLDivElement | null;
+}
+// --- Math Helpers ---
+function lerp(A: number, B: number, t: number) {
+  return A + (B - A) * t;
+}
+
+function getIntersection(
+  A: { x: number; y: number },
+  B: { x: number; y: number },
+  C: { x: number; y: number },
+  D: { x: number; y: number }
+) {
+  const tTop = (D.x - C.x) * (A.y - C.y) - (D.y - C.y) * (A.x - C.x);
+  const uTop = (C.y - A.y) * (A.x - B.x) - (C.x - A.x) * (A.y - B.y);
+  const bottom = (D.y - C.y) * (B.x - A.x) - (D.x - C.x) * (B.y - A.y);
+
+  if (bottom !== 0) {
+    const t = tTop / bottom;
+    const u = uTop / bottom;
+    if (t >= 0 && t <= 1 && u >= 0 && u <= 1) {
+      return {
+        x: lerp(A.x, B.x, t),
+        y: lerp(A.y, B.y, t),
+        offset: t,
+      };
+    }
+  }
+  return null;
+}
+
+// --- Neural Network Classes ---
+class Level {
+  inputs: number[];
+  outputs: number[];
+  biases: number[];
+  weights: number[][];
+
+  constructor(inputCount: number, outputCount: number) {
+    this.inputs = new Array(inputCount);
+    this.outputs = new Array(outputCount);
+    this.biases = new Array(outputCount);
+    this.weights = [];
+    for (let i = 0; i < inputCount; i++) {
+      this.weights[i] = new Array(outputCount);
+    }
+    Level.#randomize(this);
+  }
+
+  static #randomize(level: Level) {
+    for (let i = 0; i < level.inputs.length; i++) {
+      for (let j = 0; j < level.outputs.length; j++) {
+        level.weights[i][j] = Math.random() * 2 - 1;
+      }
+    }
+    for (let i = 0; i < level.biases.length; i++) {
+      level.biases[i] = Math.random() * 2 - 1;
+    }
+  }
+
+  static feedForward(givenInputs: number[], level: Level) {
+    for (let i = 0; i < level.inputs.length; i++) {
+      level.inputs[i] = givenInputs[i];
+    }
+    for (let i = 0; i < level.outputs.length; i++) {
+      let sum = 0;
+      for (let j = 0; j < level.inputs.length; j++) {
+        sum += level.inputs[j] * level.weights[j][i];
+      }
+      if (sum > level.biases[i]) {
+        level.outputs[i] = 1;
+      } else {
+        level.outputs[i] = 0;
+      }
+    }
+    return level.outputs;
+  }
+}
+
+class NeuralNetwork {
+  levels: Level[];
+  constructor(neuronCounts: number[]) {
+    this.levels = [];
+    for (let i = 0; i < neuronCounts.length - 1; i++) {
+      this.levels.push(new Level(neuronCounts[i], neuronCounts[i + 1]));
+    }
+  }
+
+  static feedForward(givenInputs: number[], network: NeuralNetwork) {
+    let outputs = Level.feedForward(givenInputs, network.levels[0]);
+    for (let i = 1; i < network.levels.length; i++) {
+      outputs = Level.feedForward(outputs, network.levels[i]);
+    }
+    return outputs;
+  }
+
+  // Basic mutation for Phase 3
+  static mutate(network: NeuralNetwork, amount: number = 1) {
+    network.levels.forEach((level) => {
+      for (let i = 0; i < level.biases.length; i++) {
+        level.biases[i] = lerp(level.biases[i], Math.random() * 2 - 1, amount);
+      }
+      for (let i = 0; i < level.weights.length; i++) {
+        for (let j = 0; j < level.weights[i].length; j++) {
+          level.weights[i][j] = lerp(
+            level.weights[i][j],
+            Math.random() * 2 - 1,
+            amount
+          );
+        }
+      }
+    });
+  }
+}
+
+// --- Sensor Class ---
+class Sensor {
+  car: Car;
+  rayCount: number;
+  rayLength: number;
+  raySpread: number;
+  rays: { x: number; y: number }[][];
+  readings: ({ x: number; y: number; offset: number } | null)[];
+
+  constructor(car: Car) {
+    this.car = car;
+    this.rayCount = 5;
+    this.rayLength = 150;
+    this.raySpread = Math.PI / 2; // 90 degrees
+    this.rays = [];
+    this.readings = [];
+  }
+
+  update(roadBorders: { x: number; y: number }[][]) {
+    this.#castRays();
+    this.readings = [];
+    for (let i = 0; i < this.rays.length; i++) {
+      this.readings.push(this.#getReading(this.rays[i], roadBorders));
+    }
+  }
+
+  #castRays() {
+    this.rays = [];
+    for (let i = 0; i < this.rayCount; i++) {
+      const rayAngle =
+        lerp(
+          this.raySpread / 2,
+          -this.raySpread / 2,
+          this.rayCount == 1 ? 0.5 : i / (this.rayCount - 1)
+        ) + this.car.angle;
+
+      const start = { x: this.car.x, y: this.car.y };
+      const end = {
+        x: this.car.x - Math.sin(rayAngle) * this.rayLength,
+        y: this.car.y - Math.cos(rayAngle) * this.rayLength, // Standard math rotation fix
+        // Note: car.angle logic in main loop uses cos for X, sin for Y.
+        // Let's match the car's coordinate system exactly.
+        // In main loop: x += Math.cos(angle), y += Math.sin(angle)
+      };
+
+      // Re-calculating end based on main loop coordinate system
+      // Car angle 0 faces RIGHT. -PI/2 faces UP.
+      // We want rays spreading around the car's facing direction.
+      end.x = this.car.x + Math.cos(rayAngle) * this.rayLength;
+      end.y = this.car.y + Math.sin(rayAngle) * this.rayLength;
+
+      this.rays.push([start, end]);
+    }
+  }
+
+  #getReading(
+    ray: { x: number; y: number }[],
+    roadBorders: { x: number; y: number }[][]
+  ) {
+    const touches = [];
+
+    for (let i = 0; i < roadBorders.length; i++) {
+      const border = roadBorders[i];
+      for (let j = 1; j < border.length; j++) {
+        const touch = getIntersection(ray[0], ray[1], border[j - 1], border[j]);
+        if (touch) {
+          touches.push(touch);
+        }
+      }
+    }
+
+    if (touches.length == 0) {
+      return null;
+    } else {
+      const offsets = touches.map((e) => e.offset);
+      const minOffset = Math.min(...offsets);
+      return touches.find((e) => e.offset == minOffset) || null;
+    }
+  }
+
+  draw(ctx: CanvasRenderingContext2D) {
+    for (let i = 0; i < this.rayCount; i++) {
+      let end = this.rays[i][1];
+      if (this.readings[i]) {
+        end = this.readings[i]!;
+      }
+
+      // Draw visible ray (Yellow)
+      ctx.beginPath();
+      ctx.lineWidth = 2;
+      ctx.strokeStyle = "yellow";
+      ctx.moveTo(this.rays[i][0].x, this.rays[i][0].y);
+      ctx.lineTo(end.x, end.y);
+      ctx.stroke();
+
+      // Draw collision ray part (Red - unseen by car but good for debug)
+      ctx.beginPath();
+      ctx.lineWidth = 2;
+      ctx.strokeStyle = "red";
+      ctx.moveTo(this.rays[i][1].x, this.rays[i][1].y);
+      ctx.lineTo(end.x, end.y);
+      ctx.stroke();
+    }
+  }
 }
 
 // --- Game Logic Engine ---
@@ -45,6 +282,8 @@ class CarRacingLogic {
     shoulderColor: "#c0392b",
     shoulderAltColor: "#ecf0f1",
     crashOnEdge: false,
+    showSensors: true,
+    aiMode: false,
   };
 
   // Car Physics
@@ -61,6 +300,8 @@ class CarRacingLogic {
     turnSpeed: 2.5,
     color: "#3498db",
     offRoad: false,
+    sensor: null as Sensor | null,
+    brain: null as NeuralNetwork | null,
   };
 
   // Inputs
@@ -68,6 +309,7 @@ class CarRacingLogic {
 
   // Data
   track: { x: number; y: number }[] = [];
+  roadBorders: { x: number; y: number }[][] = []; // [LeftBorderPoints, RightBorderPoints]
 
   constructor(canvas: HTMLCanvasElement, uiRefs: UIRefs) {
     this.canvas = canvas;
@@ -75,7 +317,9 @@ class CarRacingLogic {
       alpha: false,
     }) as CanvasRenderingContext2D;
     this.uiRefs = uiRefs;
-
+    this.car.sensor = new Sensor(this.car);
+    // 5 inputs (sensors), 6 hidden neurons, 4 outputs (Up,Down,Left,Right)
+    this.car.brain = new NeuralNetwork([this.car.sensor.rayCount, 6, 4]);
     // Bind loop
     this.gameLoop = this.gameLoop.bind(this);
   }
@@ -91,6 +335,8 @@ class CarRacingLogic {
     this.config.laneCount = newConfig.laneCount;
     this.config.laneWidth = newConfig.laneWidth;
     this.config.crashOnEdge = newConfig.crashOnEdge;
+    this.config.showSensors = newConfig.showSensors;
+    this.config.aiMode = newConfig.aiMode; // added
   }
 
   resize() {
@@ -157,6 +403,7 @@ class CarRacingLogic {
     }
 
     this.track = this.smoothTrack(this.track, 4);
+    this.computeTrackBorders();
     this.updateTrackBounds();
     this.resetCar();
 
@@ -185,6 +432,50 @@ class CarRacingLogic {
       smoothed = newPoints;
     }
     return smoothed;
+  }
+
+  computeTrackBorders() {
+    // Calculate Left and Right borders based on track spine
+    // These are used for raycasting intersection
+    const width = (this.config.laneCount * this.config.laneWidth) / 2;
+    const leftBorder = [];
+    const rightBorder = [];
+
+    for (let i = 0; i < this.track.length - 1; i++) {
+      const p1 = this.track[i];
+      const p2 = this.track[i + 1];
+
+      // Normal calculation
+      const dx = p2.x - p1.x;
+      const dy = p2.y - p1.y;
+      const len = Math.hypot(dx, dy);
+      const nx = -dy / len; // Normal X
+      const ny = dx / len; // Normal Y
+
+      // Offset vertices
+      leftBorder.push({
+        x: p1.x + nx * width,
+        y: p1.y + ny * width,
+      });
+      rightBorder.push({
+        x: p1.x - nx * width,
+        y: p1.y - ny * width,
+      });
+
+      // Add final point for last segment
+      if (i === this.track.length - 2) {
+        leftBorder.push({
+          x: p2.x + nx * width,
+          y: p2.y + ny * width,
+        });
+        rightBorder.push({
+          x: p2.x - nx * width,
+          y: p2.y - ny * width,
+        });
+      }
+    }
+
+    this.roadBorders = [leftBorder, rightBorder];
   }
 
   updateTrackBounds() {
@@ -235,7 +526,21 @@ class CarRacingLogic {
 
   updatePhysics(dt: number) {
     if (this.state !== "PLAYING") return;
+    // AI Control Logic
+    if (this.config.aiMode && this.car.brain && this.car.sensor) {
+      // Inputs: 1 - offset (so 1 is Close/Touching, 0 is Far)
+      const offsets = this.car.sensor.readings.map((s) =>
+        s == null ? 0 : 1 - s.offset
+      );
 
+      const outputs = NeuralNetwork.feedForward(offsets, this.car.brain);
+
+      // Map outputs to controls [Up, Down, Left, Right]
+      this.input.up = !!outputs[0];
+      this.input.down = !!outputs[1];
+      this.input.left = !!outputs[2];
+      this.input.right = !!outputs[3];
+    }
     // Acceleration
     if (this.input.up) this.car.speed += this.car.acceleration * dt;
     else if (this.input.down) this.car.speed -= this.car.acceleration * dt;
@@ -255,6 +560,11 @@ class CarRacingLogic {
     // Movement
     this.car.x += Math.cos(this.car.angle) * this.car.speed * dt;
     this.car.y += Math.sin(this.car.angle) * this.car.speed * dt;
+
+    // Sensors
+    if (this.car.sensor) {
+      this.car.sensor.update(this.roadBorders);
+    }
 
     this.checkOffRoad();
     this.checkProgress();
@@ -441,6 +751,18 @@ class CarRacingLogic {
         totalWidth
       );
     }
+
+    // DEBUG: Draw Calculated Borders for Sensors
+    /*
+    this.ctx.strokeStyle = "rgba(255, 0, 0, 0.5)";
+    this.ctx.lineWidth = 2;
+    this.roadBorders.forEach(border => {
+        this.ctx.beginPath();
+        if(border.length > 0) this.ctx.moveTo(border[0].x, border[0].y);
+        for(let i=1; i<border.length; i++) this.ctx.lineTo(border[i].x, border[i].y);
+        this.ctx.stroke();
+    });
+    */
   }
 
   drawOffsetPath(offset: number) {
@@ -532,6 +854,11 @@ class CarRacingLogic {
     this.ctx.fillRect(-this.car.height / 2, this.car.width / 2 - 8, 2, 6);
 
     this.ctx.restore();
+
+    // Draw Sensors (Independent of car rotation in draw because sensor rays are absolute coords)
+    if (this.config.showSensors && this.car.sensor) {
+      this.car.sensor.draw(this.ctx);
+    }
   }
 
   updateHUD() {

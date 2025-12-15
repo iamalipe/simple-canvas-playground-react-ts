@@ -9,7 +9,7 @@ class SnakeGameLogic {
   gameLoopInterval = 500 - this.speed * 10;
   score = 0;
   isGameStarted = false;
-  intervalRef: NodeJS.Timeout | undefined;
+  intervalRef: ReturnType<typeof setInterval> | undefined;
   onScoreChange: ((score: number) => void) | undefined;
   onGameOver: ((lastScore: number) => void) | undefined;
   // const boundingClientRect = canvas.getBoundingClientRect();

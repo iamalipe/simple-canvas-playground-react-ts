@@ -23,6 +23,8 @@ const CarRacing = () => {
     laneWidth: 60,
     trackComplexity: 100,
     crashOnEdge: false,
+    showSensors: true,
+    aiMode: false,
   });
 
   const [viewModeText, setViewModeText] = useState("View Full Map");
@@ -189,6 +191,40 @@ const CarRacing = () => {
               className="ml-2 text-sm font-medium text-gray-300"
             >
               Hard Mode (Crash)
+            </label>
+          </div>
+          <div className="flex items-center mb-2">
+            <input
+              type="checkbox"
+              id="chkSensors"
+              checked={config.showSensors}
+              onChange={(e) =>
+                setConfig({ ...config, showSensors: e.target.checked })
+              }
+              className="w-4 h-4 text-yellow-500 bg-gray-700 border-gray-600 rounded focus:ring-yellow-500"
+            />
+            <label
+              htmlFor="chkSensors"
+              className="ml-2 text-sm font-medium text-gray-300"
+            >
+              Show Sensors
+            </label>
+          </div>
+          <div className="flex items-center mb-4">
+            <input
+              type="checkbox"
+              id="chkAI"
+              checked={config.aiMode}
+              onChange={(e) =>
+                setConfig({ ...config, aiMode: e.target.checked })
+              }
+              className="w-4 h-4 text-green-500 bg-gray-700 border-gray-600 rounded focus:ring-green-500"
+            />
+            <label
+              htmlFor="chkAI"
+              className="ml-2 text-sm font-medium text-gray-300"
+            >
+              AI Mode (Random)
             </label>
           </div>
 
